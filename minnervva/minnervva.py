@@ -14,7 +14,7 @@ MINNERVA is a linter for finding non-deterministic functions in pytorch code.
 """
 
 def find_function_calls(node):
-    """ Recusively find all function calls in a node.
+    """ Recursively find all function calls in a node.
 
     :param node: The node to search for function calls.
     :returns: A list of all function calls in the node.
