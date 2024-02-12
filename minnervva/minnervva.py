@@ -37,7 +37,7 @@ def lint_file(path: Path, verbose: bool = False):
     :returns: None
     """
     if verbose:
-        print(f'Linting file: {args.path}')
+        print(f'Linting file: {path}')
 
     with open(path, 'r') as file:
         source = file.read()
@@ -46,12 +46,13 @@ def lint_file(path: Path, verbose: bool = False):
 
     function_calls = find_function_calls(tree)
     for call in function_calls:
-        print(call.func.id)
-
+        if hasattr(call.func, 'id'):
+            print(call.func.id)
 
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('--verbose', '-v',
+                        action='store_true',
                         help='Enable chatty output')
     parser.add_argument('path', type=Path,
                         help='Path to the file or directory to lint')
