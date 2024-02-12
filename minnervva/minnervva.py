@@ -48,6 +48,8 @@ def lint_file(path: Path, verbose: bool = False):
     for call in function_calls:
         if hasattr(call.func, 'id'):
             print(call.func.id)
+        elif hasattr(call.func, 'attr'):
+            print(call.func.attr)
 
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
