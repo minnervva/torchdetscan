@@ -34,7 +34,7 @@ def lint_file(path: Path):
     :param path: The path to the file to lint.
     :returns: None
     """
-
+    print(f'Linting file: {args.path}')
     with open(path, 'r') as file:
         source = file.read()
 
@@ -55,9 +55,11 @@ def main():
     args = parser.parse_args()
 
     if args.path.is_file():
-        print(f'Linting file: {args.path}')
+        lint_file(args.path)
     elif args.path.is_dir():
         print(f'Linting directory: {args.path}')
+        for file in args.path.rglob('*.py'):
+            lint_file(file)
     else:
         print(f'Path does not exist: {args.path}')
 
