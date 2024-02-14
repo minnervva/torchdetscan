@@ -95,6 +95,11 @@ def lint_file(path: Path, verbose: bool = False):
 
     if violations == []:
         print(f'No violations found in {path}')
+    else:
+        print(f'Violations found in {path}:')
+        for violation in violations:
+            print(f'  {violation.lineno}: {violation.func.id if hasattr(violation.func, "id") else violation.func.attr}')
+
 
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
