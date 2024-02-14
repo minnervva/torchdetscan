@@ -16,7 +16,7 @@ DESCRIPTION = \
 MINNERVA is a linter for finding non-deterministic functions in pytorch code.
 """
 
-forbidden_functions = set(['AvgPool3D',
+forbidden_functions = set(['AvgPool3d',
                            'AdaptiveAvgPool2d',
                            'AdaptiveAvgPool3d',
                            'MaxPool3d',
@@ -53,7 +53,7 @@ def find_function_calls(node):
     """
     function_calls = []
     for child in ast.iter_child_nodes(node):
-        if isinstance(child, ast.Call):
+        if isinstance(child, ast.Attribute):
             function_calls.append(child)
         else:
             function_calls.extend(find_function_calls(child))
@@ -68,15 +68,13 @@ def find_violations(functions: list):
     """
     violations = []
     for function in functions:
-        if hasattr(function.func, 'id'):
-            if function.func.id in forbidden_functions:
+        if hasattr(function, 'id'):
+            if function.id in forbidden_functions:
                 violations.append(function)
-        elif hasattr(function.func, 'attr'):
-            if function.func.attr in forbidden_functions:
+        elif hasattr(function, 'attr'):
+            if function.attr in forbidden_functions:
                 violations.append(function)
-        elif hasattr(function.func, 'Attribute'):
-            if function.func.Attribute.attr in forbidden_functions:
-                violations.append(function)
+
     return violations
 
 def lint_file(path: Path, verbose: bool = False):
@@ -94,16 +92,15 @@ def lint_file(path: Path, verbose: bool = False):
 
     tree = ast.parse(source)
 
-    function_calls = find_function_calls(tree)
+    # function_calls = find_function_calls(tree)
 
-    violations = find_violations(function_calls)
+    # violations = find_violations(function_calls)
 
-    if violations == []:
-        print(f'No violations found in {path}')
-    else:
-        print(f'Violations found in {path}:')
-        for violation in violations:
-            print(f'  {violation.lineno}: {violation.func.id if hasattr(violation.func, "id") else violation.func.attr}')
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Attribute):
+            if node.attr in forbidden_functions:
+                print(f'Violation found in {path}: {node.lineno}: {node.attr}')
+
 
 
 def main():
