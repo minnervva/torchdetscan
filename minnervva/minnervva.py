@@ -45,37 +45,6 @@ forbidden_functions = set(['AvgPool3d',
                            'scatter_reduce',
                            'resize_'])
 
-def find_function_calls(node):
-    """ Recursively find all function calls in a node.
-
-        :param node: The node to search for function calls.
-        :returns: A list of all function calls in the node.
-    """
-    function_calls = []
-    for child in ast.iter_child_nodes(node):
-        if isinstance(child, ast.Attribute):
-            function_calls.append(child)
-        else:
-            function_calls.extend(find_function_calls(child))
-    return function_calls
-
-
-def find_violations(functions: list):
-    """ Find all violations in a list of function calls.
-
-    :param functions: A list of function calls to search for violations.
-    :returns: A list of all violations in the function calls.
-    """
-    violations = []
-    for function in functions:
-        if hasattr(function, 'id'):
-            if function.id in forbidden_functions:
-                violations.append(function)
-        elif hasattr(function, 'attr'):
-            if function.attr in forbidden_functions:
-                violations.append(function)
-
-    return violations
 
 def lint_file(path: Path, verbose: bool = False):
     """Lint a single file.
@@ -92,14 +61,10 @@ def lint_file(path: Path, verbose: bool = False):
 
     tree = ast.parse(source)
 
-    # function_calls = find_function_calls(tree)
-
-    # violations = find_violations(function_calls)
-
     for node in ast.walk(tree):
         if isinstance(node, ast.Attribute):
             if node.attr in forbidden_functions:
-                print(f'Violation found in {path}: {node.lineno}: {node.attr}')
+                print(f'Non-deterministic function found in: {node.lineno}: {node.attr}')
 
 
 
@@ -117,7 +82,7 @@ def main():
         lint_file(args.path, args.verbose)
     elif args.path.is_dir():
         if args.verbose:
-            print(f'Linting directory: {args.path}')
+            print(f'Linting directory: {args.path.absolute()}')
         for file in args.path.rglob('*.py'):
             lint_file(file, args.verbose)
     else:
