@@ -4,6 +4,8 @@
 Linter for finding non-deterministic functions in pytorch code.
 
 usage: minnervva.py [-h] [--verbose VERBOSE] path
+
+`path` can be a file or a directory
 """
 import argparse
 from pathlib import Path
@@ -71,6 +73,9 @@ def find_violations(functions: list):
                 violations.append(function)
         elif hasattr(function.func, 'attr'):
             if function.func.attr in forbidden_functions:
+                violations.append(function)
+        elif hasattr(function.func, 'Attribute'):
+            if function.func.Attribute.attr in forbidden_functions:
                 violations.append(function)
     return violations
 
