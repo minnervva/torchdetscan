@@ -14,6 +14,35 @@ DESCRIPTION = \
 MINNERVA is a linter for finding non-deterministic functions in pytorch code.
 """
 
+forbidden_functions = set(['AvgPool3D',
+                           'AdaptiveAvgPool2d',
+                           'AdaptiveAvgPool3d',
+                           'MaxPool3d',
+                           'AdaptiveMaxPool2d',
+                           'FractionalMaxPool2d',
+                           'FractionalMaxPool3d',
+                           'MaxUnpool1d',
+                           'MaxUnpool2d',
+                           'MaxUnpool3d',
+                           'interpolate',
+                           'ReflectionPad1d',
+                           'ReflectionPad2d',
+                           'ReflectionPad3d',
+                           'ReplicationPad1d',
+                           'ReplicationPad3d',
+                           'NLLLoss',
+                           'CTCLoss',
+                           'EmbeddingBag',
+                           'put_',
+                           'histc',
+                           'bincount',
+                           'kthvalue',
+                           'median',
+                           'grid_sample',
+                           'cumsum',
+                           'scatter_reduce',
+                           'resize_'])
+
 def find_function_calls(node):
     """ Recursively find all function calls in a node.
 
