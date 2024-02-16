@@ -1,5 +1,9 @@
 """ This contains pytorch code that intentionally uses non-deterministic
-functions, and is used as to exercise the linter.
+functions, and is used to exercise the linter.
+
+These examples are copied from
+
+https://pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html#torch.use_deterministic_algorithms
 """
 
 import torch

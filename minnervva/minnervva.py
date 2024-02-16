@@ -11,39 +11,18 @@ import argparse
 from pathlib import Path
 import ast
 
-DESCRIPTION = \
-"""
+DESCRIPTION = """
 MINNERVA is a linter for finding non-deterministic functions in pytorch code.
 """
 
-forbidden_functions = set(['AvgPool3d',
-                           'AdaptiveAvgPool2d',
-                           'AdaptiveAvgPool3d',
-                           'MaxPool3d',
-                           'AdaptiveMaxPool2d',
-                           'FractionalMaxPool2d',
-                           'FractionalMaxPool3d',
-                           'MaxUnpool1d',
-                           'MaxUnpool2d',
-                           'MaxUnpool3d',
-                           'interpolate',
-                           'ReflectionPad1d',
-                           'ReflectionPad2d',
-                           'ReflectionPad3d',
-                           'ReplicationPad1d',
-                           'ReplicationPad3d',
-                           'NLLLoss',
-                           'CTCLoss',
-                           'EmbeddingBag',
-                           'put_',
-                           'histc',
-                           'bincount',
-                           'kthvalue',
-                           'median',
-                           'grid_sample',
-                           'cumsum',
-                           'scatter_reduce',
-                           'resize_'])
+always_nondeterministic = set(
+        ['AvgPool3d', 'AdaptiveAvgPool2d', 'AdaptiveAvgPool3d', 'MaxPool3d',
+         'AdaptiveMaxPool2d', 'FractionalMaxPool2d', 'FractionalMaxPool3d',
+         'MaxUnpool1d', 'MaxUnpool2d', 'MaxUnpool3d', 'interpolate',
+         'ReflectionPad1d', 'ReflectionPad2d', 'ReflectionPad3d',
+         'ReplicationPad1d', 'ReplicationPad3d', 'NLLLoss', 'CTCLoss',
+         'EmbeddingBag', 'put_', 'histc', 'bincount', 'kthvalue', 'median',
+         'grid_sample', 'cumsum', 'scatter_reduce', 'resize_'])
 
 
 def lint_file(path: Path, verbose: bool = False):
@@ -63,15 +42,15 @@ def lint_file(path: Path, verbose: bool = False):
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Attribute):
-            if node.attr in forbidden_functions:
-                print(f'Non-deterministic function found in: {node.lineno}: {node.attr}')
-
+            if node.attr in always_nondeterministic:
+                print(
+                    f'Non-deterministic function found in line {node.lineno}: '
+                    f'{node.attr}')
 
 
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
-    parser.add_argument('--verbose', '-v',
-                        action='store_true',
+    parser.add_argument('--verbose', '-v', action='store_true',
                         help='Enable chatty output')
     parser.add_argument('path', type=Path,
                         help='Path to the file or directory to lint')
@@ -89,6 +68,7 @@ def main():
         print(f'Path does not exist: {args.path}')
 
     print('Done')
+
 
 if __name__ == '__main__':
     main()
