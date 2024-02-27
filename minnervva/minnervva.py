@@ -15,14 +15,16 @@ DESCRIPTION = """
 MINNERVA is a linter for finding non-deterministic functions in pytorch code.
 """
 
-always_nondeterministic = set(
-        ['AvgPool3d', 'AdaptiveAvgPool2d', 'AdaptiveAvgPool3d', 'MaxPool3d',
-         'AdaptiveMaxPool2d', 'FractionalMaxPool2d', 'FractionalMaxPool3d',
-         'MaxUnpool1d', 'MaxUnpool2d', 'MaxUnpool3d', 'interpolate',
-         'ReflectionPad1d', 'ReflectionPad2d', 'ReflectionPad3d',
-         'ReplicationPad1d', 'ReplicationPad3d', 'NLLLoss', 'CTCLoss',
-         'EmbeddingBag', 'put_', 'histc', 'bincount', 'kthvalue', 'median',
-         'grid_sample', 'cumsum', 'scatter_reduce', 'resize_'])
+always_nondeterministic = {'AvgPool3d', 'AdaptiveAvgPool2d',
+                           'AdaptiveAvgPool3d', 'MaxPool3d',
+                           'AdaptiveMaxPool2d', 'FractionalMaxPool2d',
+                           'FractionalMaxPool3d', 'MaxUnpool1d', 'MaxUnpool2d',
+                           'MaxUnpool3d', 'interpolate', 'ReflectionPad1d',
+                           'ReflectionPad2d', 'ReflectionPad3d',
+                           'ReplicationPad1d', 'ReplicationPad3d', 'NLLLoss',
+                           'CTCLoss', 'EmbeddingBag', 'put_', 'histc',
+                           'bincount', 'kthvalue', 'median', 'grid_sample',
+                           'cumsum', 'scatter_reduce', 'resize_'}
 
 
 def lint_file(path: Path, verbose: bool = False):
