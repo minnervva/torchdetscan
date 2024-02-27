@@ -5,7 +5,6 @@ These examples are copied from
 
 https://pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html#torch.use_deterministic_algorithms
 """
-
 import torch
 
 torch.randn(10, device='cuda').kthvalue(1)
