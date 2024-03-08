@@ -43,7 +43,7 @@ def report_nondetermninism(line, column, function_name, argument=None):
               f"line {line}, column {column}")
     else:
         print(f"Found non-deterministic function '{function_name}' with argument "
-              f"'{argument}' that makes it nondeterministic {argument} at "
+              f"'{argument}' that makes it nondeterministic at "
               f"line {line}, column {column}")
 
 
