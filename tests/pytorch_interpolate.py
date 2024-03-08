@@ -18,4 +18,11 @@ import torch.nn.functional as F
 input = torch.randn(1, 1, 5, 5)
 
 # Resize the image to 8x8
+output = F.interpolate(input, size=(8, 8), mode='linear', align_corners=False)
 output = F.interpolate(input, size=(8, 8), mode='bilinear', align_corners=False)
+output = F.interpolate(input, size=(8, 8), mode='nearest', align_corners=False)
+output = F.interpolate(input, size=(8, 8), mode='bicubic', align_corners=False)
+output = F.interpolate(input, size=(8, 8), mode='trilinear', align_corners=False)
+output = F.interpolate(input, size=(8, 8), mode='area', align_corners=False)
+output = F.interpolate(input, size=(8, 8), mode='nearest-exact', align_corners=False)
+output = F.interpolate(input, size=(8, 8), align_corners=False)
