@@ -70,7 +70,13 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                 # Check to see if the keyword arguments are non-deterministic
                 self.handle_interpolate(node)
             else:
-                report_nondetermninism(node.lineno, node.col_offset, node.func.id)
+                if hasattr(node.func, 'id'):
+                    report_nondetermninism(node.lineno, node.col_offset, node.func.id)
+                elif hasattr(node.func, 'attr'):
+                    report_nondetermninism(node.lineno, node.col_offset, node.func.attr)
+                else:
+                    # Welp, dunno how to get the name of the function
+                    raise ValueError('Unknown function type')
 
         # Continue searching the tree
         self.generic_visit(node)
