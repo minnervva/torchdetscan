@@ -42,9 +42,9 @@ def report_nondetermninism(line, column, function_name, argument=None):
         print(f"Found non-deterministic function {function_name} at "
               f"line {line}, column {column}")
     else:
-        print(f"Found non-deterministic function {function_name} with argument "
-              f"that makes it nondeterministic {argument} at line {line}, "
-              f"column {column}")
+        print(f"Found non-deterministic function '{function_name}' with argument "
+              f"'{argument}' that makes it nondeterministic {argument} at "
+              f"line {line}, column {column}")
 
 
 class FindNondetermnisticFunctions(ast.NodeVisitor):
@@ -58,15 +58,15 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         """
         for kw in node.keywords:
             # Check if there's a keyword argument `file=sys.stderr`
-            if kw.arg == 'mode' and isinstance(kw.value, ast.Attribute):
-                if kw.value.attr in FindNondetermnisticFunctions.interpolate_nondeterministic_keywords:
-                    report_nondetermninism(node.lineno, node.col_offset, 'interpolate', kw.value.attr)
+            if kw.arg == 'mode' and isinstance(kw.value, ast.Constant):
+                if kw.value.value in FindNondetermnisticFunctions.interpolate_nondeterministic_keywords:
+                    report_nondetermninism(node.lineno, node.col_offset, 'interpolate', kw.value.value)
 
 
     def visit_Call(self, node):
         # Check if the function being called is `print`
-        if isinstance(node.func, ast.Name) and node.func.id in always_nondeterministic:
-            if node.func.id == 'interpolate':
+        if isinstance(node.func, ast.Attribute) and node.func.attr in always_nondeterministic:
+            if node.func.attr == 'interpolate':
                 # Check to see if the keyword arguments are non-deterministic
                 self.handle_interpolate(node)
             else:
