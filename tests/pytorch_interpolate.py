@@ -1,9 +1,10 @@
 """ This contains pytorch code that intentionally uses non-deterministic
 functions, and is used to exercise the linter.
 
-Tests for
+Tests for:
 
-torch.nn.functional.interpolate() when attempting to differentiate a CUDA tensor and one of the following modes is used:
+torch.nn.functional.interpolate() when attempting to differentiate a CUDA
+tensor and one of the following modes is used:
 - linear
 - bilinear
 - bicubic
