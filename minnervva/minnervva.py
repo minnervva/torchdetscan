@@ -26,6 +26,7 @@ always_nondeterministic = {'AvgPool3d', 'AdaptiveAvgPool2d',
                            'bincount', 'kthvalue', 'median', 'grid_sample',
                            'cumsum', 'scatter_reduce', 'resize_'}
 
+
 def report_nondetermninism(line, column, function_name, argument=None):
     """ This function is called when a non-deterministic function is found.
 
@@ -42,16 +43,19 @@ def report_nondetermninism(line, column, function_name, argument=None):
         print(f"Found non-deterministic function {function_name} at "
               f"line {line}, column {column}")
     else:
-        print(f"Found non-deterministic function '{function_name}' with argument "
-              f"'{argument}' that makes it nondeterministic at "
-              f"line {line}, column {column}")
+        print(
+            f"Found non-deterministic function '{function_name}' with argument "
+            f"'{argument}' that makes it nondeterministic at "
+            f"line {line}, column {column}")
 
 
 class FindNondetermnisticFunctions(ast.NodeVisitor):
     """ This Visitor class is used to find non-deterministic functions in
         pytorch code.
     """
-    interpolate_nondeterministic_keywords = {'linear', 'bilinear', 'bicubic', 'trilinear'}
+    interpolate_nondeterministic_keywords = {'linear', 'bilinear', 'bicubic',
+                                             'trilinear'}
+
     def handle_interpolate(self, node):
         """ This function is called when the visitor finds an `interpolate`
             function call.
@@ -59,21 +63,26 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         for kw in node.keywords:
             # Check if there's a keyword argument `file=sys.stderr`
             if kw.arg == 'mode' and isinstance(kw.value, ast.Constant):
-                if kw.value.value in FindNondetermnisticFunctions.interpolate_nondeterministic_keywords:
-                    report_nondetermninism(node.lineno, node.col_offset, 'interpolate', kw.value.value)
-
+                if kw.value.value in \
+                        FindNondetermnisticFunctions.interpolate_nondeterministic_keywords:
+                    report_nondetermninism(node.lineno, node.col_offset,
+                                           'interpolate', kw.value.value)
 
     def visit_Call(self, node):
         # Check if the function being called is `print`
-        if isinstance(node.func, ast.Attribute) and node.func.attr in always_nondeterministic:
+        if (isinstance(node.func,
+                       ast.Attribute) and node.func.attr in
+                always_nondeterministic):
             if node.func.attr == 'interpolate':
                 # Check to see if the keyword arguments are non-deterministic
                 self.handle_interpolate(node)
             else:
                 if hasattr(node.func, 'id'):
-                    report_nondetermninism(node.lineno, node.col_offset, node.func.id)
+                    report_nondetermninism(node.lineno, node.col_offset,
+                                           node.func.id)
                 elif hasattr(node.func, 'attr'):
-                    report_nondetermninism(node.lineno, node.col_offset, node.func.attr)
+                    report_nondetermninism(node.lineno, node.col_offset,
+                                           node.func.attr)
                 else:
                     # Welp, dunno how to get the name of the function
                     raise ValueError('Unknown function type')
