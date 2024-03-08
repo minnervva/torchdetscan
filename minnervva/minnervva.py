@@ -61,7 +61,7 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             function call.
         """
         for kw in node.keywords:
-            # Check if there's a keyword argument `file=sys.stderr`
+            # Check if there's a forbidden keyword argument
             if kw.arg == 'mode' and isinstance(kw.value, ast.Constant):
                 if kw.value.value in \
                         FindNondetermnisticFunctions.interpolate_nondeterministic_keywords:
@@ -69,7 +69,7 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                                            'interpolate', kw.value.value)
 
     def visit_Call(self, node):
-        # Check if the function being called is `print`
+        # Check if the function being called is non-deterministic
         if (isinstance(node.func,
                        ast.Attribute) and node.func.attr in
                 always_nondeterministic):
