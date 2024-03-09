@@ -68,6 +68,29 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                     report_nondetermninism(node.lineno, node.col_offset,
                                            'interpolate', kw.value.value)
 
+
+    def handle_put_(self, node):
+        """ This function is called when the visitor finds a `put_` function
+            call.
+        """
+        for kw in node.keywords:
+            # Check if there's a forbidden keyword argument
+            if kw.arg == 'accumulate' and isinstance(kw.value, ast.Constant):
+                if kw.value.value:
+                    print(f'Found non-deterministic function put_ at line {node.lineno}, '
+                          f'column {node.col_offset} with accumulate=True that '
+                          f'will be non-deterministic if used with a CUDA tensor')
+                    break
+                else:
+                    print(f'Found non-deterministic function put_ at line {node.lineno}, '
+                          f'column {node.col_offset} because accumulate=False')
+                    break
+        else:
+            print(f'Found non-deterministic function put_ at line {node.lineno}, '
+                  f'column {node.col_offset} because accumulate keyword '
+                  f'argument will be False by default and therefore '
+                  f'non-deterministic.')
+
     def visit_Call(self, node):
         # Check if the function being called is non-deterministic
         if (isinstance(node.func,
@@ -76,6 +99,8 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             if node.func.attr == 'interpolate':
                 # Check to see if the keyword arguments are non-deterministic
                 self.handle_interpolate(node)
+            elif node.func.attr == 'put_':
+                self.handle_put_(node)
             else:
                 if hasattr(node.func, 'id'):
                     report_nondetermninism(node.lineno, node.col_offset,
