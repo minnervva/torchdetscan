@@ -105,6 +105,18 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                         f'will be non-deterministic if used with a CUDA tensor')
                     break
 
+    def handle_scatter_reduce(self, node):
+        """ This function is called when the visitor finds a `scatter_reduce`
+            function call.
+        """
+        for kw in node.keywords:
+            # Check if there's a forbidden keyword argument
+            if kw.arg == 'reduce' and isinstance(kw.value, ast.Constant):
+                if kw.value.value == 'prod':
+                    print(f'Found non-deterministic function scatter_reduce at line {node.lineno}, '
+                          f'column {node.col_offset} with reduce={kw.value.value} that '
+                          f'will be non-deterministic if used with a CUDA tensor')
+                    break
 
     def visit_Call(self, node):
         # Check if the function being called is non-deterministic
@@ -118,6 +130,8 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                 self.handle_put_(node)
             elif node.func.attr == 'EmbeddingBag':
                 self.handle_embeddedbag(node)
+            elif node.func.attr == 'scatter_reduce':
+                self.handle_scatter_reduce(node)
             else:
                 if hasattr(node.func, 'id'):
                     report_nondetermninism(node.lineno, node.col_offset,
