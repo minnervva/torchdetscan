@@ -91,6 +91,21 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                   f'argument will be False by default and therefore '
                   f'non-deterministic.')
 
+    def handle_embeddedbag(self, node):
+        """ This function is called when the visitor finds an `EmbeddingBag`
+            function call.
+        """
+        for kw in node.keywords:
+            # Check if there's a forbidden keyword argument
+            if kw.arg == 'mode' and isinstance(kw.value, ast.Constant):
+                if kw.value.value == 'max':
+                    print(
+                        f'Found non-deterministic function EmbeddingBag at line {node.lineno}, '
+                        f'column {node.col_offset} with mode=max that '
+                        f'will be non-deterministic if used with a CUDA tensor')
+                    break
+
+
     def visit_Call(self, node):
         # Check if the function being called is non-deterministic
         if (isinstance(node.func,
@@ -101,6 +116,8 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                 self.handle_interpolate(node)
             elif node.func.attr == 'put_':
                 self.handle_put_(node)
+            elif node.func.attr == 'EmbeddingBag':
+                self.handle_embeddedbag(node)
             else:
                 if hasattr(node.func, 'id'):
                     report_nondetermninism(node.lineno, node.col_offset,
