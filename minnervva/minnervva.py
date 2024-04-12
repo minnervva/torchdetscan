@@ -63,8 +63,8 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
     interpolate_nondeterministic_keywords = {'linear', 'bilinear', 'bicubic',
                                              'trilinear'}
 
-    def __init__(self):
-        super().__init__(verbose = False)
+    def __init__(self, verbose = False):
+        super().__init__()
 
         self.verbose = verbose
 
@@ -154,30 +154,30 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
 
     def visit_Call(self, node):
         # Check if the function being called is non-deterministic
-        if (isinstance(node.func,
-                       ast.Attribute) and node.func.attr in
-                self.non_deterministic_funcs):
+        if (isinstance(node.func, ast.Attribute)):
             if node.func.attr == 'use_deterministic_algorithms':
                 self.handle_use_deterministic_algorithms()
-            elif node.func.attr == 'interpolate':
-                # Check to see if the keyword arguments are non-deterministic
-                self.handle_interpolate(node)
-            elif node.func.attr == 'put_':
-                self.handle_put_(node)
-            elif node.func.attr == 'EmbeddingBag':
-                self.handle_embeddedbag(node)
-            elif node.func.attr == 'scatter_reduce':
-                self.handle_scatter_reduce(node)
-            else:
-                if hasattr(node.func, 'id'):
-                    report_nondetermninism(node.lineno, node.col_offset,
-                                           node.func.id)
-                elif hasattr(node.func, 'attr'):
-                    report_nondetermninism(node.lineno, node.col_offset,
-                                           node.func.attr)
+
+            if node.func.attr in self.non_deterministic_funcs:
+                if node.func.attr == 'interpolate':
+                    # Check to see if the keyword arguments are non-deterministic
+                    self.handle_interpolate(node)
+                elif node.func.attr == 'put_':
+                    self.handle_put_(node)
+                elif node.func.attr == 'EmbeddingBag':
+                    self.handle_embeddedbag(node)
+                elif node.func.attr == 'scatter_reduce':
+                    self.handle_scatter_reduce(node)
                 else:
-                    # Welp, dunno how to get the name of the function
-                    raise ValueError('Unknown function type')
+                    if hasattr(node.func, 'id'):
+                        report_nondetermninism(node.lineno, node.col_offset,
+                                               node.func.id)
+                    elif hasattr(node.func, 'attr'):
+                        report_nondetermninism(node.lineno, node.col_offset,
+                                               node.func.attr)
+                    else:
+                        # Welp, dunno how to get the name of the function
+                        raise ValueError('Unknown function type')
 
         # Continue searching the tree
         self.generic_visit(node)
