@@ -64,7 +64,9 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                                              'trilinear'}
 
     def __init__(self):
-        super().__init__()
+        super().__init__(verbose = False)
+
+        self.verbose = verbose
 
         # Initially we assume that all functions are non-deterministic; we will
         # remove the `conditionally_nondeterministic` from the set of
@@ -72,7 +74,21 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         # torch.use_deterministic_algorithms(True).
         self.non_deterministic_funcs = always_nondeterministic | conditionally_nondeterministic
 
-        pass
+
+    def handle_use_deterministic_algorithms(self):
+        """ If we are using deterministic algorithms, then we can remove the
+            `conditionally_nondeterministic` functions from the set of
+            non-deterministic functions.
+
+            TODO add check for True not False.
+        """
+        if self.verbose:
+            print('Found call to torch.use_deterministic_algorithms(True)')
+
+        # Just remove the set of conditionally non-deterministic functions
+        # from the overall set of non-deterministic functions.
+        self.non_deterministic_funcs -= conditionally_nondeterministic
+
 
     def handle_interpolate(self, node):
         """ This function is called when the visitor finds an `interpolate`
@@ -141,7 +157,9 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         if (isinstance(node.func,
                        ast.Attribute) and node.func.attr in
                 self.non_deterministic_funcs):
-            if node.func.attr == 'interpolate':
+            if node.func.attr == 'use_deterministic_algorithms':
+                self.handle_use_deterministic_algorithms()
+            elif node.func.attr == 'interpolate':
                 # Check to see if the keyword arguments are non-deterministic
                 self.handle_interpolate(node)
             elif node.func.attr == 'put_':
@@ -180,7 +198,7 @@ def lint_file(path: Path, verbose: bool = False):
 
     tree = ast.parse(source)
 
-    visitor = FindNondetermnisticFunctions()
+    visitor = FindNondetermnisticFunctions(verbose)
     visitor.visit(tree)
 
 
