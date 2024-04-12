@@ -26,6 +26,13 @@ always_nondeterministic = {'AvgPool3d', 'AdaptiveAvgPool2d',
                            'bincount', 'kthvalue', 'median', 'grid_sample',
                            'cumsum', 'scatter_reduce', 'resize_'}
 
+# These ARE deterministic iff torch.use_deterministic_algorithms(True)
+# https://pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html#torch-use-deterministic-algorithms
+conditionally_nondeterministic = {'Conv1d', 'Conv2d', 'Conv3d', 'ConvTranspose1d',
+                                  'ConvTranspose2d', 'ConvTranspose3d', 'ReplicationPad2d',
+                                  'bmm', 'index_put', 'put_', 'scatter_add_', 'gather',
+                                  'index_add', 'index_select', 'repeat_interleave',
+                                  'index_copy', 'scatter', 'scatter_reduce'}
 
 def report_nondetermninism(line, column, function_name, argument=None):
     """ This function is called when a non-deterministic function is found.
@@ -55,6 +62,17 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
     """
     interpolate_nondeterministic_keywords = {'linear', 'bilinear', 'bicubic',
                                              'trilinear'}
+
+    def __init__(self):
+        super().__init__()
+
+        # Initially we assume that all functions are non-deterministic; we will
+        # remove the `conditionally_nondeterministic` from the set of
+        # non-deterministic functions iff we encounter a call to
+        # torch.use_deterministic_algorithms(True).
+        self.non_deterministic_funcs = always_nondeterministic | conditionally_nondeterministic
+
+        pass
 
     def handle_interpolate(self, node):
         """ This function is called when the visitor finds an `interpolate`
@@ -122,7 +140,7 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         # Check if the function being called is non-deterministic
         if (isinstance(node.func,
                        ast.Attribute) and node.func.attr in
-                always_nondeterministic):
+                self.non_deterministic_funcs):
             if node.func.attr == 'interpolate':
                 # Check to see if the keyword arguments are non-deterministic
                 self.handle_interpolate(node)
