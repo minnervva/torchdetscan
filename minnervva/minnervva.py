@@ -26,6 +26,13 @@ always_nondeterministic = {'AvgPool3d', 'AdaptiveAvgPool2d',
                            'bincount', 'kthvalue', 'median', 'grid_sample',
                            'cumsum', 'scatter_reduce', 'resize_'}
 
+# These ARE deterministic iff torch.use_deterministic_algorithms(True)
+# https://pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html#torch-use-deterministic-algorithms
+conditionally_nondeterministic = {'Conv1d', 'Conv2d', 'Conv3d', 'ConvTranspose1d',
+                                  'ConvTranspose2d', 'ConvTranspose3d', 'ReplicationPad2d',
+                                  'bmm', 'index_put', 'put_', 'scatter_add_', 'gather',
+                                  'index_add', 'index_select', 'repeat_interleave',
+                                  'index_copy', 'scatter', 'scatter_reduce'}
 
 def report_nondetermninism(line, column, function_name, argument=None):
     """ This function is called when a non-deterministic function is found.
@@ -55,6 +62,33 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
     """
     interpolate_nondeterministic_keywords = {'linear', 'bilinear', 'bicubic',
                                              'trilinear'}
+
+    def __init__(self, verbose = False):
+        super().__init__()
+
+        self.verbose = verbose
+
+        # Initially we assume that all functions are non-deterministic; we will
+        # remove the `conditionally_nondeterministic` from the set of
+        # non-deterministic functions iff we encounter a call to
+        # torch.use_deterministic_algorithms(True).
+        self.non_deterministic_funcs = always_nondeterministic | conditionally_nondeterministic
+
+
+    def handle_use_deterministic_algorithms(self):
+        """ If we are using deterministic algorithms, then we can remove the
+            `conditionally_nondeterministic` functions from the set of
+            non-deterministic functions.
+
+            TODO add check for True not False.
+        """
+        if self.verbose:
+            print('Found call to torch.use_deterministic_algorithms(True)')
+
+        # Just remove the set of conditionally non-deterministic functions
+        # from the overall set of non-deterministic functions.
+        self.non_deterministic_funcs -= conditionally_nondeterministic
+
 
     def handle_interpolate(self, node):
         """ This function is called when the visitor finds an `interpolate`
@@ -120,28 +154,30 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
 
     def visit_Call(self, node):
         # Check if the function being called is non-deterministic
-        if (isinstance(node.func,
-                       ast.Attribute) and node.func.attr in
-                always_nondeterministic):
-            if node.func.attr == 'interpolate':
-                # Check to see if the keyword arguments are non-deterministic
-                self.handle_interpolate(node)
-            elif node.func.attr == 'put_':
-                self.handle_put_(node)
-            elif node.func.attr == 'EmbeddingBag':
-                self.handle_embeddedbag(node)
-            elif node.func.attr == 'scatter_reduce':
-                self.handle_scatter_reduce(node)
-            else:
-                if hasattr(node.func, 'id'):
-                    report_nondetermninism(node.lineno, node.col_offset,
-                                           node.func.id)
-                elif hasattr(node.func, 'attr'):
-                    report_nondetermninism(node.lineno, node.col_offset,
-                                           node.func.attr)
+        if (isinstance(node.func, ast.Attribute)):
+            if node.func.attr == 'use_deterministic_algorithms':
+                self.handle_use_deterministic_algorithms()
+
+            if node.func.attr in self.non_deterministic_funcs:
+                if node.func.attr == 'interpolate':
+                    # Check to see if the keyword arguments are non-deterministic
+                    self.handle_interpolate(node)
+                elif node.func.attr == 'put_':
+                    self.handle_put_(node)
+                elif node.func.attr == 'EmbeddingBag':
+                    self.handle_embeddedbag(node)
+                elif node.func.attr == 'scatter_reduce':
+                    self.handle_scatter_reduce(node)
                 else:
-                    # Welp, dunno how to get the name of the function
-                    raise ValueError('Unknown function type')
+                    if hasattr(node.func, 'id'):
+                        report_nondetermninism(node.lineno, node.col_offset,
+                                               node.func.id)
+                    elif hasattr(node.func, 'attr'):
+                        report_nondetermninism(node.lineno, node.col_offset,
+                                               node.func.attr)
+                    else:
+                        # Welp, dunno how to get the name of the function
+                        raise ValueError('Unknown function type')
 
         # Continue searching the tree
         self.generic_visit(node)
@@ -162,7 +198,7 @@ def lint_file(path: Path, verbose: bool = False):
 
     tree = ast.parse(source)
 
-    visitor = FindNondetermnisticFunctions()
+    visitor = FindNondetermnisticFunctions(verbose)
     visitor.visit(tree)
 
 
