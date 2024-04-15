@@ -6,6 +6,9 @@ Linter for finding non-deterministic functions in pytorch code.
 usage: minnervva.py [-h] [--verbose VERBOSE] path
 
 `path` can be a file or a directory
+
+TODO need to add support for __get_item__
+TODO need to check for True for torch.use_deterministic_algorithms(True)
 """
 import argparse
 from pathlib import Path
@@ -221,15 +224,12 @@ def lint_file(path: Path, verbose: bool = False):
     :param verbose: Whether to enable chatty output.
     :returns: None
     """
-    if verbose:
-        print(f'Linting file: {path}')
-
     with open(path, 'r') as file:
         source = file.read()
 
     tree = ast.parse(source)
 
-    table = Table(title=path.name)
+    table = Table(title=str(path.absolute()))
     table.add_column('Function', justify='left', style='cyan')
     table.add_column('Line', justify='right', style='magenta')
     table.add_column('Column', justify='right', style='green')
@@ -239,7 +239,7 @@ def lint_file(path: Path, verbose: bool = False):
     visitor.visit(tree)
 
     if len(visitor.table.rows) == 0:
-        console.print(f':white_check_mark: {path }: No non-deterministic functions found\n\n')
+        console.print(f':white_check_mark: {path }: No non-deterministic functions found\n')
     else:
         console.print(visitor.table)
         console.print('\n')
@@ -258,7 +258,7 @@ def main():
         lint_file(args.path, args.verbose)
     elif args.path.is_dir():
         if args.verbose:
-            console.print(f'[cyan]Linting directory: {args.path.absolute()}[/cyan]\n')
+            console.print(f'[cyan]Linting directory: {args.path.absolute()!s}[/cyan]\n')
         for file in args.path.rglob('*.py'):
             lint_file(file, args.verbose)
     else:
