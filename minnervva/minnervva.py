@@ -6,10 +6,19 @@ Linter for finding non-deterministic functions in pytorch code.
 usage: minnervva.py [-h] [--verbose VERBOSE] path
 
 `path` can be a file or a directory
+
+TODO need to add support for __get_item__
+TODO need to check for True for torch.use_deterministic_algorithms(True)
 """
 import argparse
 from pathlib import Path
 import ast
+
+from rich.console import Console
+from rich.table import Table
+
+console = Console()
+
 
 DESCRIPTION = """
 MINNERVA is a linter for finding non-deterministic functions in pytorch code.
@@ -34,26 +43,7 @@ conditionally_nondeterministic = {'Conv1d', 'Conv2d', 'Conv3d', 'ConvTranspose1d
                                   'index_add', 'index_select', 'repeat_interleave',
                                   'index_copy', 'scatter', 'scatter_reduce'}
 
-def report_nondetermninism(line, column, function_name, argument=None):
-    """ This function is called when a non-deterministic function is found.
 
-        :param line: The line number where the non-deterministic function was
-            found.
-        :param column: The column number where the non-deterministic function
-            was found.
-        :param function_name: The name of the non-deterministic function.
-        :param argument: The optional offending argument to the
-            non-deterministic function.
-        :returns: None
-    """
-    if argument is None:
-        print(f"Found non-deterministic function {function_name} at "
-              f"line {line}, column {column}")
-    else:
-        print(
-            f"Found non-deterministic function '{function_name}' with argument "
-            f"'{argument}' that makes it nondeterministic at "
-            f"line {line}, column {column}")
 
 
 class FindNondetermnisticFunctions(ast.NodeVisitor):
@@ -63,9 +53,14 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
     interpolate_nondeterministic_keywords = {'linear', 'bilinear', 'bicubic',
                                              'trilinear'}
 
-    def __init__(self, verbose = False):
+    def __init__(self, table, verbose = False):
+        """ Initialize the visitor.
+            :param table: Rich table for reporting non-determ. funcs
+            :param verbose: Whether to enable chatty output.
+        """
         super().__init__()
 
+        self.table = table
         self.verbose = verbose
 
         # Initially we assume that all functions are non-deterministic; we will
@@ -74,16 +69,32 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         # torch.use_deterministic_algorithms(True).
         self.non_deterministic_funcs = always_nondeterministic | conditionally_nondeterministic
 
+    def report_nondetermninism(self, function_name, line, column, argument=None):
+        """ This function is called when a non-deterministic function is found.
 
-    def handle_use_deterministic_algorithms(self):
+            :param line: The line number where the non-deterministic function was
+                found.
+            :param column: The column number where the non-deterministic function
+                was found.
+            :param function_name: The name of the non-deterministic function.
+            :param argument: The optional offending argument to the
+                non-deterministic function.
+            :returns: None
+        """
+        if argument is None:
+            self.table.add_row(function_name, str(line), str(column), '')
+        else:
+            self.table.add_row(function_name, str(line), str(column), argument)
+
+    def handle_use_deterministic_algorithms(self, node):
         """ If we are using deterministic algorithms, then we can remove the
             `conditionally_nondeterministic` functions from the set of
             non-deterministic functions.
 
             TODO add check for True not False.
         """
-        if self.verbose:
-            print('Found call to torch.use_deterministic_algorithms(True)')
+        self.table.title = (self.table.title +
+                            f'[red] (torch.use_deterministic_algorithms() at {node.lineno}:{node.col_offset}) [/red]')
 
         # Just remove the set of conditionally non-deterministic functions
         # from the overall set of non-deterministic functions.
@@ -97,10 +108,12 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         for kw in node.keywords:
             # Check if there's a forbidden keyword argument
             if kw.arg == 'mode' and isinstance(kw.value, ast.Constant):
+                details = f'because mode={kw.value.value} will be non-deterministic'
                 if kw.value.value in \
                         FindNondetermnisticFunctions.interpolate_nondeterministic_keywords:
-                    report_nondetermninism(node.lineno, node.col_offset,
-                                           'interpolate', kw.value.value)
+                    self.report_nondetermninism('interpolate',
+                                                node.lineno, node.col_offset,
+                                                details)
 
 
     def handle_put_(self, node):
@@ -111,19 +124,17 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             # Check if there's a forbidden keyword argument
             if kw.arg == 'accumulate' and isinstance(kw.value, ast.Constant):
                 if kw.value.value:
-                    print(f'Found non-deterministic function put_ at line {node.lineno}, '
-                          f'column {node.col_offset} with accumulate=True that '
-                          f'will be non-deterministic if used with a CUDA tensor')
+                    self.report_nondetermninism('put_', node.lineno, node.col_offset,
+                                                'accumulate=True will be non-deterministic if used with a CUDA tensor')
                     break
                 else:
-                    print(f'Found non-deterministic function put_ at line {node.lineno}, '
-                          f'column {node.col_offset} because accumulate=False')
+                    self.report_nondetermninism('put_',
+                                                node.lineno, node.col_offset,
+                                                'accumulate=False')
                     break
         else:
-            print(f'Found non-deterministic function put_ at line {node.lineno}, '
-                  f'column {node.col_offset} because accumulate keyword '
-                  f'argument will be False by default and therefore '
-                  f'non-deterministic.')
+            self.report_nondetermninism('put_', node.lineno, node.col_offset,
+                                        'accumulate will be False by default and therefore non-deterministic')
 
     def handle_embeddedbag(self, node):
         """ This function is called when the visitor finds an `EmbeddingBag`
@@ -133,10 +144,8 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             # Check if there's a forbidden keyword argument
             if kw.arg == 'mode' and isinstance(kw.value, ast.Constant):
                 if kw.value.value == 'max':
-                    print(
-                        f'Found non-deterministic function EmbeddingBag at line {node.lineno}, '
-                        f'column {node.col_offset} with mode=max that '
-                        f'will be non-deterministic if used with a CUDA tensor')
+                    self.report_nondetermninism('EmbeddingBag', node.lineno, node.col_offset,
+                                                'mode=max will be non-deterministic if used with a CUDA tensor')
                     break
 
     def handle_scatter_reduce(self, node):
@@ -147,16 +156,15 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             # Check if there's a forbidden keyword argument
             if kw.arg == 'reduce' and isinstance(kw.value, ast.Constant):
                 if kw.value.value == 'prod':
-                    print(f'Found non-deterministic function scatter_reduce at line {node.lineno}, '
-                          f'column {node.col_offset} with reduce={kw.value.value} that '
-                          f'will be non-deterministic if used with a CUDA tensor')
+                    self.report_nondetermninism('scatter_reduce', node.lineno, node.col_offset,
+                                                f'reduce={kw.value.value} will be non-deterministic if used with a CUDA tensor')
                     break
 
     def visit_Call(self, node):
         # Check if the function being called is non-deterministic
         if (isinstance(node.func, ast.Attribute)):
             if node.func.attr == 'use_deterministic_algorithms':
-                self.handle_use_deterministic_algorithms()
+                self.handle_use_deterministic_algorithms(node)
 
             if node.func.attr in self.non_deterministic_funcs:
                 if node.func.attr == 'interpolate':
@@ -170,11 +178,13 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                     self.handle_scatter_reduce(node)
                 else:
                     if hasattr(node.func, 'id'):
-                        report_nondetermninism(node.lineno, node.col_offset,
-                                               node.func.id)
+                        self.report_nondetermninism(node.func.id,
+                                                    node.lineno, node.col_offset,
+                                               )
                     elif hasattr(node.func, 'attr'):
-                        report_nondetermninism(node.lineno, node.col_offset,
-                                               node.func.attr)
+                        self.report_nondetermninism(node.func.attr,
+                                                    node.lineno, node.col_offset,
+                                               )
                     else:
                         # Welp, dunno how to get the name of the function
                         raise ValueError('Unknown function type')
@@ -190,16 +200,25 @@ def lint_file(path: Path, verbose: bool = False):
     :param verbose: Whether to enable chatty output.
     :returns: None
     """
-    if verbose:
-        print(f'Linting file: {path}')
-
     with open(path, 'r') as file:
         source = file.read()
 
     tree = ast.parse(source)
 
-    visitor = FindNondetermnisticFunctions(verbose)
+    table = Table(title=str(path.absolute()))
+    table.add_column('Function', justify='left', style='cyan')
+    table.add_column('Line', justify='right', style='magenta')
+    table.add_column('Column', justify='right', style='green')
+    table.add_column('Optional Arguments', justify='left', style='purple')
+
+    visitor = FindNondetermnisticFunctions(table, verbose)
     visitor.visit(tree)
+
+    if len(visitor.table.rows) == 0:
+        console.print(f':white_check_mark: {path }: No non-deterministic functions found\n')
+    else:
+        console.print(visitor.table)
+        console.print('\n')
 
 
 def main():
@@ -215,13 +234,12 @@ def main():
         lint_file(args.path, args.verbose)
     elif args.path.is_dir():
         if args.verbose:
-            print(f'Linting directory: {args.path.absolute()}')
+            console.print(f'[cyan]Linting directory: {args.path.absolute()!s}[/cyan]\n')
         for file in args.path.rglob('*.py'):
             lint_file(file, args.verbose)
     else:
-        print(f'Path does not exist: {args.path}')
+        console.print(f':X: [red]Path does not exist: {args.path}[/red]')
 
-    print('Done')
 
 
 if __name__ == '__main__':
