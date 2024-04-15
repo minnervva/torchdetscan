@@ -1,6 +1,6 @@
 """ Example of a python module that has no non-deterministic functions """
 
-# This is silly code intened to demonstrate how the linter deals with
+# This is silly code intended to demonstrate how the linter deals with
 # modules that have no non-deterministic functions.
 
 import random

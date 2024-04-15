@@ -88,15 +88,18 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             #       f"'{argument}' that makes it nondeterministic at "
             #       f"line {line}, column {column}")
 
-    def handle_use_deterministic_algorithms(self):
+    def handle_use_deterministic_algorithms(self, node):
         """ If we are using deterministic algorithms, then we can remove the
             `conditionally_nondeterministic` functions from the set of
             non-deterministic functions.
 
             TODO add check for True not False.
         """
-        if self.verbose:
-            print('Found call to torch.use_deterministic_algorithms(True)')
+        # if self.verbose:
+        #     print('Found call to torch.use_deterministic_algorithms(True)')
+
+        self.table.title = (self.table.title +
+                            f' (deterministic_algorithms() at {node.lineno}:{node.col_offset})')
 
         # Just remove the set of conditionally non-deterministic functions
         # from the overall set of non-deterministic functions.
@@ -135,8 +138,8 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                     self.report_nondetermninism('put_',
                                                 node.lineno, node.col_offset,
                                                 'accumulate=False')
-                    print(f'Found non-deterministic function put_ at line {node.lineno}, '
-                          f'column {node.col_offset} because accumulate=False')
+                    # print(f'Found non-deterministic function put_ at line {node.lineno}, '
+                    #       f'column {node.col_offset} because accumulate=False')
                     break
         else:
             self.report_nondetermninism('put_', node.lineno, node.col_offset,
@@ -181,7 +184,7 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         # Check if the function being called is non-deterministic
         if (isinstance(node.func, ast.Attribute)):
             if node.func.attr == 'use_deterministic_algorithms':
-                self.handle_use_deterministic_algorithms()
+                self.handle_use_deterministic_algorithms(node)
 
             if node.func.attr in self.non_deterministic_funcs:
                 if node.func.attr == 'interpolate':
@@ -233,6 +236,9 @@ def lint_file(path: Path, verbose: bool = False):
 
     visitor = FindNondetermnisticFunctions(table, verbose)
     visitor.visit(tree)
+
+    if len(visitor.table.rows) == 0:
+        console.print('No non-deterministic functions found')
 
     console.print(visitor.table)
     console.print('\n')
