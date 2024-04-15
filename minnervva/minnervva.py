@@ -83,13 +83,8 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         """
         if argument is None:
             self.table.add_row(function_name, str(line), str(column), '')
-            # print(f"Found non-deterministic function {function_name} at "
-            #       f"line {line}, column {column}")
         else:
             self.table.add_row(function_name, str(line), str(column), argument)
-            # print(f"Found non-deterministic function '{function_name}' with argument "
-            #       f"'{argument}' that makes it nondeterministic at "
-            #       f"line {line}, column {column}")
 
     def handle_use_deterministic_algorithms(self, node):
         """ If we are using deterministic algorithms, then we can remove the
@@ -98,9 +93,6 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
 
             TODO add check for True not False.
         """
-        # if self.verbose:
-        #     print('Found call to torch.use_deterministic_algorithms(True)')
-
         self.table.title = (self.table.title +
                             f'[red] (torch.use_deterministic_algorithms() at {node.lineno}:{node.col_offset}) [/red]')
 
@@ -134,24 +126,15 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                 if kw.value.value:
                     self.report_nondetermninism('put_', node.lineno, node.col_offset,
                                                 'accumulate=True will be non-deterministic if used with a CUDA tensor')
-                    # print(f'Found non-deterministic function put_ at line {node.lineno}, '
-                    #       f'column {node.col_offset} with accumulate=True that '
-                    #       f'will be non-deterministic if used with a CUDA tensor')
                     break
                 else:
                     self.report_nondetermninism('put_',
                                                 node.lineno, node.col_offset,
                                                 'accumulate=False')
-                    # print(f'Found non-deterministic function put_ at line {node.lineno}, '
-                    #       f'column {node.col_offset} because accumulate=False')
                     break
         else:
             self.report_nondetermninism('put_', node.lineno, node.col_offset,
                                         'accumulate will be False by default and therefore non-deterministic')
-            # print(f'Found non-deterministic function put_ at line {node.lineno}, '
-            #       f'column {node.col_offset} because accumulate keyword '
-            #       f'argument will be False by default and therefore '
-            #       f'non-deterministic.')
 
     def handle_embeddedbag(self, node):
         """ This function is called when the visitor finds an `EmbeddingBag`
@@ -163,10 +146,6 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                 if kw.value.value == 'max':
                     self.report_nondetermninism('EmbeddingBag', node.lineno, node.col_offset,
                                                 'mode=max will be non-deterministic if used with a CUDA tensor')
-                    # print(
-                    #     f'Found non-deterministic function EmbeddingBag at line {node.lineno}, '
-                    #     f'column {node.col_offset} with mode=max that '
-                    #     f'will be non-deterministic if used with a CUDA tensor')
                     break
 
     def handle_scatter_reduce(self, node):
@@ -179,9 +158,6 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                 if kw.value.value == 'prod':
                     self.report_nondetermninism('scatter_reduce', node.lineno, node.col_offset,
                                                 f'reduce={kw.value.value} will be non-deterministic if used with a CUDA tensor')
-                    # print(f'Found non-deterministic function scatter_reduce at line {node.lineno}, '
-                    #       f'column {node.col_offset} with reduce={kw.value.value} that '
-                    #       f'will be non-deterministic if used with a CUDA tensor')
                     break
 
     def visit_Call(self, node):
