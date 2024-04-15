@@ -11,6 +11,12 @@ import argparse
 from pathlib import Path
 import ast
 
+from rich.console import Console
+from rich.table import Table
+
+console = Console()
+
+
 DESCRIPTION = """
 MINNERVA is a linter for finding non-deterministic functions in pytorch code.
 """
@@ -34,26 +40,7 @@ conditionally_nondeterministic = {'Conv1d', 'Conv2d', 'Conv3d', 'ConvTranspose1d
                                   'index_add', 'index_select', 'repeat_interleave',
                                   'index_copy', 'scatter', 'scatter_reduce'}
 
-def report_nondetermninism(line, column, function_name, argument=None):
-    """ This function is called when a non-deterministic function is found.
 
-        :param line: The line number where the non-deterministic function was
-            found.
-        :param column: The column number where the non-deterministic function
-            was found.
-        :param function_name: The name of the non-deterministic function.
-        :param argument: The optional offending argument to the
-            non-deterministic function.
-        :returns: None
-    """
-    if argument is None:
-        print(f"Found non-deterministic function {function_name} at "
-              f"line {line}, column {column}")
-    else:
-        print(
-            f"Found non-deterministic function '{function_name}' with argument "
-            f"'{argument}' that makes it nondeterministic at "
-            f"line {line}, column {column}")
 
 
 class FindNondetermnisticFunctions(ast.NodeVisitor):
@@ -63,9 +50,14 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
     interpolate_nondeterministic_keywords = {'linear', 'bilinear', 'bicubic',
                                              'trilinear'}
 
-    def __init__(self, verbose = False):
+    def __init__(self, table, verbose = False):
+        """ Initialize the visitor.
+            :param table: Rich table for reporting non-determ. funcs
+            :param verbose: Whether to enable chatty output.
+        """
         super().__init__()
 
+        self.table = table
         self.verbose = verbose
 
         # Initially we assume that all functions are non-deterministic; we will
@@ -74,6 +66,27 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         # torch.use_deterministic_algorithms(True).
         self.non_deterministic_funcs = always_nondeterministic | conditionally_nondeterministic
 
+    def report_nondetermninism(self, line, column, function_name, argument=None):
+        """ This function is called when a non-deterministic function is found.
+
+            :param line: The line number where the non-deterministic function was
+                found.
+            :param column: The column number where the non-deterministic function
+                was found.
+            :param function_name: The name of the non-deterministic function.
+            :param argument: The optional offending argument to the
+                non-deterministic function.
+            :returns: None
+        """
+        if argument is None:
+            self.table.add_row(function_name, str(line), str(column), '')
+            # print(f"Found non-deterministic function {function_name} at "
+            #       f"line {line}, column {column}")
+        else:
+            self.table.add_row(function_name, str(line), str(column), argument)
+            # print(f"Found non-deterministic function '{function_name}' with argument "
+            #       f"'{argument}' that makes it nondeterministic at "
+            #       f"line {line}, column {column}")
 
     def handle_use_deterministic_algorithms(self):
         """ If we are using deterministic algorithms, then we can remove the
@@ -99,7 +112,7 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             if kw.arg == 'mode' and isinstance(kw.value, ast.Constant):
                 if kw.value.value in \
                         FindNondetermnisticFunctions.interpolate_nondeterministic_keywords:
-                    report_nondetermninism(node.lineno, node.col_offset,
+                    self.report_nondetermninism(node.lineno, node.col_offset,
                                            'interpolate', kw.value.value)
 
 
@@ -170,10 +183,10 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                     self.handle_scatter_reduce(node)
                 else:
                     if hasattr(node.func, 'id'):
-                        report_nondetermninism(node.lineno, node.col_offset,
+                        self.report_nondetermninism(node.lineno, node.col_offset,
                                                node.func.id)
                     elif hasattr(node.func, 'attr'):
-                        report_nondetermninism(node.lineno, node.col_offset,
+                        self.report_nondetermninism(node.lineno, node.col_offset,
                                                node.func.attr)
                     else:
                         # Welp, dunno how to get the name of the function
@@ -198,8 +211,16 @@ def lint_file(path: Path, verbose: bool = False):
 
     tree = ast.parse(source)
 
-    visitor = FindNondetermnisticFunctions(verbose)
+    table = Table(title=path.name)
+    table.add_column('Function', justify='left', style='cyan')
+    table.add_column('Line', justify='right', style='magenta')
+    table.add_column('Column', justify='right', style='green')
+    table.add_column('Optional Arguments', justify='left', style='purple')
+
+    visitor = FindNondetermnisticFunctions(table, verbose)
     visitor.visit(tree)
+
+    console.print(visitor.table)
 
 
 def main():
