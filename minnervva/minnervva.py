@@ -99,7 +99,7 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         #     print('Found call to torch.use_deterministic_algorithms(True)')
 
         self.table.title = (self.table.title +
-                            f' (deterministic_algorithms() at {node.lineno}:{node.col_offset})')
+                            f'[red] (torch.use_deterministic_algorithms() at {node.lineno}:{node.col_offset}) [/red]')
 
         # Just remove the set of conditionally non-deterministic functions
         # from the overall set of non-deterministic functions.
@@ -113,11 +113,12 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         for kw in node.keywords:
             # Check if there's a forbidden keyword argument
             if kw.arg == 'mode' and isinstance(kw.value, ast.Constant):
+                details = f'because mode={kw.value.value} will be non-deterministic'
                 if kw.value.value in \
                         FindNondetermnisticFunctions.interpolate_nondeterministic_keywords:
                     self.report_nondetermninism('interpolate',
                                                 node.lineno, node.col_offset,
-                                            kw.value.value)
+                                                details)
 
 
     def handle_put_(self, node):
@@ -238,10 +239,10 @@ def lint_file(path: Path, verbose: bool = False):
     visitor.visit(tree)
 
     if len(visitor.table.rows) == 0:
-        console.print('No non-deterministic functions found')
-
-    console.print(visitor.table)
-    console.print('\n')
+        console.print(f':white_check_mark: {path }: No non-deterministic functions found\n\n')
+    else:
+        console.print(visitor.table)
+        console.print('\n')
 
 
 def main():
@@ -257,13 +258,12 @@ def main():
         lint_file(args.path, args.verbose)
     elif args.path.is_dir():
         if args.verbose:
-            print(f'Linting directory: {args.path.absolute()}')
+            console.print(f'[cyan]Linting directory: {args.path.absolute()}[/cyan]\n')
         for file in args.path.rglob('*.py'):
             lint_file(file, args.verbose)
     else:
-        print(f'Path does not exist: {args.path}')
+        console.print(f':X: [red]Path does not exist: {args.path}[/red]')
 
-    print('Done')
 
 
 if __name__ == '__main__':
