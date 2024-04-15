@@ -235,6 +235,7 @@ def lint_file(path: Path, verbose: bool = False):
     visitor.visit(tree)
 
     console.print(visitor.table)
+    console.print('\n')
 
 
 def main():
