@@ -66,7 +66,7 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         # torch.use_deterministic_algorithms(True).
         self.non_deterministic_funcs = always_nondeterministic | conditionally_nondeterministic
 
-    def report_nondetermninism(self, line, column, function_name, argument=None):
+    def report_nondetermninism(self, function_name, line, column, argument=None):
         """ This function is called when a non-deterministic function is found.
 
             :param line: The line number where the non-deterministic function was
@@ -112,8 +112,9 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             if kw.arg == 'mode' and isinstance(kw.value, ast.Constant):
                 if kw.value.value in \
                         FindNondetermnisticFunctions.interpolate_nondeterministic_keywords:
-                    self.report_nondetermninism(node.lineno, node.col_offset,
-                                           'interpolate', kw.value.value)
+                    self.report_nondetermninism('interpolate',
+                                                node.lineno, node.col_offset,
+                                            kw.value.value)
 
 
     def handle_put_(self, node):
@@ -124,19 +125,26 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             # Check if there's a forbidden keyword argument
             if kw.arg == 'accumulate' and isinstance(kw.value, ast.Constant):
                 if kw.value.value:
-                    print(f'Found non-deterministic function put_ at line {node.lineno}, '
-                          f'column {node.col_offset} with accumulate=True that '
-                          f'will be non-deterministic if used with a CUDA tensor')
+                    self.report_nondetermninism('put_', node.lineno, node.col_offset,
+                                                'accumulate=True will be non-deterministic if used with a CUDA tensor')
+                    # print(f'Found non-deterministic function put_ at line {node.lineno}, '
+                    #       f'column {node.col_offset} with accumulate=True that '
+                    #       f'will be non-deterministic if used with a CUDA tensor')
                     break
                 else:
+                    self.report_nondetermninism('put_',
+                                                node.lineno, node.col_offset,
+                                                'accumulate=False')
                     print(f'Found non-deterministic function put_ at line {node.lineno}, '
                           f'column {node.col_offset} because accumulate=False')
                     break
         else:
-            print(f'Found non-deterministic function put_ at line {node.lineno}, '
-                  f'column {node.col_offset} because accumulate keyword '
-                  f'argument will be False by default and therefore '
-                  f'non-deterministic.')
+            self.report_nondetermninism('put_', node.lineno, node.col_offset,
+                                        'accumulate will be False by default and therefore non-deterministic')
+            # print(f'Found non-deterministic function put_ at line {node.lineno}, '
+            #       f'column {node.col_offset} because accumulate keyword '
+            #       f'argument will be False by default and therefore '
+            #       f'non-deterministic.')
 
     def handle_embeddedbag(self, node):
         """ This function is called when the visitor finds an `EmbeddingBag`
@@ -146,10 +154,12 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             # Check if there's a forbidden keyword argument
             if kw.arg == 'mode' and isinstance(kw.value, ast.Constant):
                 if kw.value.value == 'max':
-                    print(
-                        f'Found non-deterministic function EmbeddingBag at line {node.lineno}, '
-                        f'column {node.col_offset} with mode=max that '
-                        f'will be non-deterministic if used with a CUDA tensor')
+                    self.report_nondetermninism('EmbeddingBag', node.lineno, node.col_offset,
+                                                'mode=max will be non-deterministic if used with a CUDA tensor')
+                    # print(
+                    #     f'Found non-deterministic function EmbeddingBag at line {node.lineno}, '
+                    #     f'column {node.col_offset} with mode=max that '
+                    #     f'will be non-deterministic if used with a CUDA tensor')
                     break
 
     def handle_scatter_reduce(self, node):
@@ -160,9 +170,11 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             # Check if there's a forbidden keyword argument
             if kw.arg == 'reduce' and isinstance(kw.value, ast.Constant):
                 if kw.value.value == 'prod':
-                    print(f'Found non-deterministic function scatter_reduce at line {node.lineno}, '
-                          f'column {node.col_offset} with reduce={kw.value.value} that '
-                          f'will be non-deterministic if used with a CUDA tensor')
+                    self.report_nondetermninism('scatter_reduce', node.lineno, node.col_offset,
+                                                f'reduce={kw.value.value} will be non-deterministic if used with a CUDA tensor')
+                    # print(f'Found non-deterministic function scatter_reduce at line {node.lineno}, '
+                    #       f'column {node.col_offset} with reduce={kw.value.value} that '
+                    #       f'will be non-deterministic if used with a CUDA tensor')
                     break
 
     def visit_Call(self, node):
@@ -183,11 +195,13 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                     self.handle_scatter_reduce(node)
                 else:
                     if hasattr(node.func, 'id'):
-                        self.report_nondetermninism(node.lineno, node.col_offset,
-                                               node.func.id)
+                        self.report_nondetermninism(node.func.id,
+                                                    node.lineno, node.col_offset,
+                                               )
                     elif hasattr(node.func, 'attr'):
-                        self.report_nondetermninism(node.lineno, node.col_offset,
-                                               node.func.attr)
+                        self.report_nondetermninism(node.func.attr,
+                                                    node.lineno, node.col_offset,
+                                               )
                     else:
                         # Welp, dunno how to get the name of the function
                         raise ValueError('Unknown function type')
