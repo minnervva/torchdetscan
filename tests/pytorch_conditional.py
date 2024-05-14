@@ -84,7 +84,7 @@ output = torch.scatter_reduce(input, 1, torch.tensor([1, 3]), torch.tensor([9, 1
 ## Now we *explicitly* turn *off* the deterministic mode
 ##
 
-foo = torch.use_deterministic_algorithms(True)
+foo = torch.use_deterministic_algorithms(False)
 
 ## And then do all those tests all over again
 
