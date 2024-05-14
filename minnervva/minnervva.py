@@ -90,8 +90,6 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         """ If we are using deterministic algorithms, then we can remove the
             `conditionally_nondeterministic` functions from the set of
             non-deterministic functions.
-
-            TODO add check for True not False.
         """
         if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
 
