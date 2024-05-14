@@ -93,13 +93,28 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
 
             TODO add check for True not False.
         """
-        self.table.title = (self.table.title +
-                            f'[red] (torch.use_deterministic_algorithms() at {node.lineno}:{node.col_offset}) [/red]')
+        if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
 
-        # Just remove the set of conditionally non-deterministic functions
-        # from the overall set of non-deterministic functions.
-        self.non_deterministic_funcs -= conditionally_nondeterministic
+            if node.args[0].value:
+                self.table.title = (self.table.title +
+                                    f'[red] (torch.use_deterministic_'
+                                    f'algorithms() turned [yellow]ON[/yellow] '
+                                    f'{node.lineno}:{node.col_offset}) [/red]')
 
+                # Just remove the set of conditionally non-deterministic functions
+                # from the overall set of non-deterministic functions.
+                self.non_deterministic_funcs -= conditionally_nondeterministic
+            else:
+                self.table.title = (
+                            self.table.title + f'[red] (torch.use_deterministic_'
+                                               f'algorithms() turned [yellow]OFF[/yellow] '
+                                               f'{node.lineno}:'
+                                               f'{node.col_offset}) [/red]')
+
+                # Add the set of conditionally non-deterministic functions
+                # from the overall set of non-deterministic functions. Even if
+                # they're already there, it doesn't hurt to try to add them.
+                self.non_deterministic_funcs |= conditionally_nondeterministic
 
     def handle_interpolate(self, node):
         """ This function is called when the visitor finds an `interpolate`
