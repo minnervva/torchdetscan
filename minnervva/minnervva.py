@@ -94,10 +94,6 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
 
             if node.args[0].value:
-                # self.table.title = (self.table.title +
-                #                     f'[red] (torch.use_deterministic_'
-                #                     f'algorithms() turned [yellow]ON[/yellow] '
-                #                     f'{node.lineno}:{node.col_offset}) [/red]')
                 self.table.add_row('use_deterministic_algorithms',
                                    str(node.lineno), str(node.col_offset),
                                    f'[red] use deterministic algorithms '
@@ -107,11 +103,6 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                 # from the overall set of non-deterministic functions.
                 self.non_deterministic_funcs -= conditionally_nondeterministic
             else:
-                # self.table.title = (
-                #             self.table.title + f'[red] (torch.use_deterministic_'
-                #                                f'algorithms() turned [yellow]OFF[/yellow] '
-                #                                f'{node.lineno}:'
-                #                                f'{node.col_offset}) [/red]')
                 self.table.add_row('use_deterministic_algorithms',
                                    str(node.lineno), str(node.col_offset),
                                    f'[red] use deterministic algorithms '
