@@ -768,7 +768,8 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         # torch.use_deterministic_algorithms(True).
         self.non_deterministic_funcs = always_nondeterministic | conditionally_nondeterministic
 
-    def report_nondetermninism(self, function_name, line, column, argument=None):
+    def report_nondetermninism(self, function_name, line, column, argument='',
+                               notes=''):
         """ This function is called when a non-deterministic function is found.
 
             :param line: The line number where the non-deterministic function was
@@ -778,12 +779,11 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
             :param function_name: The name of the non-deterministic function.
             :param argument: The optional offending argument to the
                 non-deterministic function.
+            :param notes: Optional ancillary notes
             :returns: None
         """
-        if argument is None:
-            self.table.add_row(function_name, str(line), str(column), '')
-        else:
-            self.table.add_row(function_name, str(line), str(column), argument)
+        self.table.add_row(function_name, str(line), str(column), argument, notes)
+
 
     def handle_use_deterministic_algorithms(self, node):
         """ If we are using deterministic algorithms, then we can remove the
@@ -794,7 +794,7 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
 
             if node.args[0].value:
                 self.table.add_row('use_deterministic_algorithms',
-                                   str(node.lineno), str(node.col_offset),
+                                   str(node.lineno), str(node.col_offset), '',
                                    f'[red] use deterministic algorithms '
                                    f'turned [yellow]ON[/yellow][/red]')
 
@@ -803,7 +803,7 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
                 self.non_deterministic_funcs -= conditionally_nondeterministic
             else:
                 self.table.add_row('use_deterministic_algorithms',
-                                   str(node.lineno), str(node.col_offset),
+                                   str(node.lineno), str(node.col_offset), '',
                                    f'[red] use deterministic algorithms '
                                    f'turned [yellow]OFF[/yellow][/red]')
 
@@ -920,7 +920,8 @@ def lint_file(path: Path, verbose: bool = False):
     table.add_column('Function', justify='left', style='cyan')
     table.add_column('Line', justify='right', style='magenta')
     table.add_column('Column', justify='right', style='green')
-    table.add_column('Optional Arguments', justify='left', style='purple')
+    table.add_column('Optional Arguments', justify='left', max_width=25, style='purple')
+    table.add_column('Notes', justify='left', max_width=25, style='blue')
 
     visitor = FindNondetermnisticFunctions(table, verbose)
     visitor.visit(tree)
