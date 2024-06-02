@@ -12,6 +12,7 @@ TODO need to add support for __get_item__
 import argparse
 from pathlib import Path
 import ast
+import sys
 
 from rich.console import Console
 from rich.table import Table
@@ -263,8 +264,8 @@ nondeterministic_registry["2.3"] = {"AvgPool3d", "AdaptiveAvgPool2d",
 #                                   'repeat_interleave',
 #                                   'index_copy', 'scatter', 'scatter_reduce'}
 
-always_nondeterministic = nondeterministic_registry["2.3"]
-conditionally_nondeterministic = deterministic_registry["2.3"]
+#always_nondeterministic = nondeterministic_registry["2.3"]
+#conditionally_nondeterministic = deterministic_registry["2.3"]
 
 
 class FindNondetermnisticFunctions(ast.NodeVisitor):
@@ -481,13 +482,28 @@ def lint_file(path: Path, verbose: bool = False):
 
 
 def main():
+    global always_nondeterministic, conditionally_nondeterministic
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Enable chatty output')
     parser.add_argument('path', type=Path,
                         help='Path to the file or directory to lint')
-
+    parser.add_argument('--pytorch-version', '-ptv', default='2.3', 
+                        help='Version of Pytorch to use for checking')
+    
     args = parser.parse_args()
+
+    ptv = args.pytorch_version
+
+    allowed_versions = list(deterministic_registry.keys())
+    if ptv not in allowed_versions:
+        print(f"Error: pytorch version \"{ptv}\" not in supported set {allowed_versions}")
+        sys.exit(1)
+    if args.verbose:
+        print(f"Checking against Pytorch version {ptv}")
+
+    always_nondeterministic = nondeterministic_registry[ptv]
+    conditionally_nondeterministic = deterministic_registry[ptv]
 
     if args.path.is_file():
         lint_file(args.path, args.verbose)
