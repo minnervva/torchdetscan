@@ -521,7 +521,8 @@ def main():
                         choices=deterministic_registry.keys(),
                         help='Version of Pytorch to use for checking')
     parser.add_argument('path', type=Path,
-                        help='Path to the file or directory to lint')
+                        help='Path to the file or directory in which to '
+                             'recursively lint')
 
     args = parser.parse_args()
 
