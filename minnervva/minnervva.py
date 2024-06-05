@@ -10,9 +10,8 @@ usage: minnervva.py [-h] [--verbose VERBOSE] path
 TODO need to add support for __get_item__
 """
 import argparse
-from pathlib import Path
 import ast
-import sys
+from pathlib import Path
 
 from rich.console import Console
 from rich.table import Table
@@ -270,33 +269,6 @@ nondeterministic_registry["2.3"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "CTCLoss", "EmbeddingBag", "put_", "histc", "bincount", "kthvalue",
     "median", "grid_sample", "cumsum", "scatter_reduce", "resize_", }
 
-# always_nondeterministic = {'AvgPool3d', 'AdaptiveAvgPool2d',
-#                            'AdaptiveAvgPool3d', 'MaxPool3d',
-#                            'AdaptiveMaxPool2d', 'FractionalMaxPool2d',
-#                            'FractionalMaxPool3d', 'MaxUnpool1d',
-#                            'MaxUnpool2d',
-#                            'MaxUnpool3d', 'interpolate', 'ReflectionPad1d',
-#                            'ReflectionPad2d', 'ReflectionPad3d',
-#                            'ReplicationPad1d', 'ReplicationPad3d', 'NLLLoss',
-#                            'CTCLoss', 'EmbeddingBag', 'put_', 'histc',
-#                            'bincount', 'kthvalue', 'median', 'grid_sample',
-#                            'cumsum', 'scatter_reduce', 'resize_'}
-
-# # These ARE deterministic iff torch.use_deterministic_algorithms(True)
-# # https://pytorch.org/docs/stable/generated/torch
-# .use_deterministic_algorithms.html#torch-use-deterministic-algorithms
-# conditionally_nondeterministic = {'Conv1d', 'Conv2d', 'Conv3d',
-# 'ConvTranspose1d',
-#                                   'ConvTranspose2d', 'ConvTranspose3d',
-#                                   'ReplicationPad2d',
-#                                   'bmm', 'index_put', 'put_',
-#                                   'scatter_add_', 'gather',
-#                                   'index_add', 'index_select',
-#                                   'repeat_interleave',
-#                                   'index_copy', 'scatter', 'scatter_reduce'}
-
-#always_nondeterministic = nondeterministic_registry["2.3"]
-#conditionally_nondeterministic = deterministic_registry["2.3"]
 
 
 class FindNondetermnisticFunctions(ast.NodeVisitor):
