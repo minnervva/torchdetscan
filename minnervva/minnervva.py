@@ -517,19 +517,17 @@ def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Enable chatty output')
+    parser.add_argument('--pytorch-version', '-ptv', default='2.3',
+                        choices=deterministic_registry.keys(),
+                        help='Version of Pytorch to use for checking')
     parser.add_argument('path', type=Path,
                         help='Path to the file or directory to lint')
-    parser.add_argument('--pytorch-version', '-ptv', default='2.3', 
-                        help='Version of Pytorch to use for checking')
-    
+
     args = parser.parse_args()
 
     ptv = args.pytorch_version
 
-    allowed_versions = list(deterministic_registry.keys())
-    if ptv not in allowed_versions:
-        print(f"Error: pytorch version \"{ptv}\" not in supported set {allowed_versions}")
-        sys.exit(1)
+
     if args.verbose:
         print(f"Checking against Pytorch version {ptv}")
 
