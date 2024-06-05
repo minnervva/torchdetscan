@@ -1,6 +1,6 @@
 """ This contains pytorch code that intentionally uses non-deterministic
-functions, and is used to exercise the linter.
-
+functions, and is used to exercise the linter.  This unit test is focused on
+scatter_reduce().
 """
 import torch
 

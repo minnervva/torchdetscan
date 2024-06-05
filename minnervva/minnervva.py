@@ -141,6 +141,7 @@ nondeterministic_registry["1.9.1"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "ReplicationPad2d", "ReplicationPad3d", "NLLLoss", "CTCLoss",
     "EmbeddingBag", "scatter_add_", "put_", "put_", "histc", "bincount",
     "kthvalue", "median", "gather", "grid_sample", }
+
 #
 # 1.10
 # From: https://pytorch.org/docs/1.10/generated/torch.use_deterministic_algorithms.html
