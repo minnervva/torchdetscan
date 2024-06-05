@@ -23,7 +23,15 @@ DESCRIPTION = """
 MINNERVA is a linter for finding non-deterministic functions in pytorch code.
 """
 
+# Entries in this dicionary, keyed on Pytorch version, contains
+# operations that ARE deterministic iff torch.use_deterministic_algorithms(True)
+# https://pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html
 deterministic_registry = {}
+
+# Entries in this dictionary, keyed on Pytorch version, contains 
+# normally-noneterministic operations that will throw a RuntimeError 
+# when torch.use_deterministic_algorithms(True)
+# Some may have other conditions for triggering the RuntimeError
 nondeterministic_registry = {}
 
 #
@@ -49,6 +57,7 @@ nondeterministic_registry["1.6.0"] = {"AvgPool3d", "AdaptiveAvgPool2d",
 
 #
 # 1.7.0
+# From: https://pytorch.org/docs/1.7.0/generated/torch.set_deterministic.html
 #
 deterministic_registry["1.7.0"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm", }
@@ -61,6 +70,7 @@ nondeterministic_registry["1.7.0"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "repeat_interleave", "histc", "bincount", }
 #
 # 1.7.1
+# From: https://pytorch.org/docs/1.7.1/generated/torch.set_deterministic.html
 #
 deterministic_registry["1.7.1"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm", }
@@ -73,6 +83,7 @@ nondeterministic_registry["1.7.1"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "repeat_interleave", "histc", "bincount", }
 #
 # 1.8.0
+# From: https://pytorch.org/docs/1.8.0/generated/torch.use_deterministic_algorithms.html
 #
 deterministic_registry["1.8.0"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm",
@@ -86,6 +97,7 @@ nondeterministic_registry["1.8.0"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "repeat_interleave", "histc", "bincount", "kthvalue", "median", }
 #
 # 1.8.1
+# From: https://pytorch.org/docs/1.8.1/generated/torch.use_deterministic_algorithms.html
 #
 deterministic_registry["1.8.1"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm",
@@ -99,6 +111,7 @@ nondeterministic_registry["1.8.1"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "repeat_interleave", "histc", "bincount", "kthvalue", "median", }
 #
 # 1.9.0
+# From: https://pytorch.org/docs/1.9.0/generated/torch.use_deterministic_algorithms.html
 #
 deterministic_registry["1.9.0"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm", "index_put",
@@ -112,6 +125,10 @@ nondeterministic_registry["1.9.0"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "EmbeddingBag", "scatter_add_", "put_", "put_", "histc", "bincount",
     "kthvalue", "median", "gather", "grid_sample", }
 
+#
+# 1.9.1
+# From: https://pytorch.org/docs/1.9.1/generated/torch.use_deterministic_algorithms.html
+#
 deterministic_registry["1.9.1"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm", "index_put",
     "index_put", "put_", "gather", "index_add", "index_select",
@@ -124,8 +141,10 @@ nondeterministic_registry["1.9.1"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "ReplicationPad2d", "ReplicationPad3d", "NLLLoss", "CTCLoss",
     "EmbeddingBag", "scatter_add_", "put_", "put_", "histc", "bincount",
     "kthvalue", "median", "gather", "grid_sample", }
+
 #
 # 1.10
+# From: https://pytorch.org/docs/1.10/generated/torch.use_deterministic_algorithms.html
 #
 deterministic_registry["1.10"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm", "index_put",
@@ -141,6 +160,7 @@ nondeterministic_registry["1.10"] = {"AvgPool3d", "AdaptiveAvgPool2d",
 
 #
 # 1.11
+# From: https://pytorch.org/docs/1.11/generated/torch.use_deterministic_algorithms.html
 #
 deterministic_registry["1.11"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm", "index_put",
@@ -155,6 +175,7 @@ nondeterministic_registry["1.11"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "bincount", "kthvalue", "median", "grid_sample", }
 #
 # 1.12
+# From: https://pytorch.org/docs/1.12/generated/torch.use_deterministic_algorithms.html
 #
 deterministic_registry["1.12"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm", "index_put",
@@ -169,6 +190,7 @@ nondeterministic_registry["1.12"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "bincount", "kthvalue", "median", "grid_sample", }
 #
 # 1.13
+# From : https://pytorch.org/docs/1.13/generated/torch.use_deterministic_algorithms.html
 #
 deterministic_registry["1.13"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm", "index_put",
@@ -183,6 +205,7 @@ nondeterministic_registry["1.13"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "histc", "bincount", "kthvalue", "median", "grid_sample", "cumsum", }
 #
 # 2.0
+# From: https://pytorch.org/docs/2.0/generated/torch.use_deterministic_algorithms.html
 #
 deterministic_registry["2.0"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm", "index_put",
@@ -197,6 +220,7 @@ nondeterministic_registry["2.0"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "histc", "bincount", "kthvalue", "median", "grid_sample", "cumsum", }
 #
 # 2.1
+# From: https://pytorch.org/docs/2.1/generated/torch.use_deterministic_algorithms.html
 #
 deterministic_registry["2.1"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "bmm", "index_put",
@@ -211,7 +235,10 @@ nondeterministic_registry["2.1"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "ReplicationPad3d", "NLLLoss", "CTCLoss", "EmbeddingBag", "put_", "put_",
     "histc", "bincount", "kthvalue", "median", "grid_sample", "cumsum",
     "scatter_reduce", "resize_", }
-
+#
+# 2.2
+# From: https://pytorch.org/docs/2.2/generated/torch.use_deterministic_algorithms.html
+#
 deterministic_registry["2.2"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "ReplicationPad2d",
     "bmm", "index_put", "put_", "scatter_add_", "gather", "index_add",
@@ -225,6 +252,10 @@ nondeterministic_registry["2.2"] = {"AvgPool3d", "AdaptiveAvgPool2d",
     "CTCLoss", "EmbeddingBag", "put_", "histc", "bincount", "kthvalue",
     "median", "grid_sample", "cumsum", "scatter_reduce", "resize_", }
 
+#
+# 2.3
+# From : https://pytorch.org/docs/2.3/generated/torch.use_deterministic_algorithms.html
+#
 deterministic_registry["2.3"] = {"Conv1d", "Conv2d", "Conv3d",
     "ConvTranspose1d", "ConvTranspose2d", "ConvTranspose3d", "ReplicationPad2d",
     "bmm", "index_put", "put_", "scatter_add_", "gather", "index_add",
