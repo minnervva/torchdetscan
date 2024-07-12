@@ -1,5 +1,6 @@
-# Multi-level/multimodal Infrastructure  for  Neural  Network  Error,  Reproducibility,  Verification  and Validation Analysis (MINNERVVA)
-A testing framework for deep learning non-determinism, randomness and reproducibility with applications to scientific computing and simulation
+# torchdetscan: rooting out non-determinism in pytorch code
+A testing framework for deep learning non-determinism, randomness and 
+reproducibility with applications to scientific computing and simulation.
 
 ## Usage
 
