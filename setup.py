@@ -21,5 +21,8 @@ setup(name='torchdetscan',
       entry_points={'console_scripts': ['torchdetscan = torchdetscan:main']},
       install_requires=[
             'rich',
-      ]
+      ],
+      classifiers=["Programming Language :: Python :: 3",
+            "License :: OSI Approved :: MIT License",
+            "Operating System :: OS Independent", ],
       )
