@@ -1,5 +1,5 @@
 # torchdetscan: rooting out non-determinism in pytorch code
-A testing framework for deep learning non-determinism, randomness and 
+A linter for deep learning non-determinism, randomness and 
 reproducibility with applications to scientific computing and simulation.
 
 ## Usage
