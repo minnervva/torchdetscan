@@ -1,0 +1,2 @@
+# We use rich tables for colorful, friendly output
+rich
