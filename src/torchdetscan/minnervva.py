@@ -3,7 +3,7 @@
 
 Linter for finding non-deterministic functions in pytorch code.
 
-usage: minnervva.py [-h] [--verbose VERBOSE] path
+usage: torchdetscan.py [-h] [--verbose VERBOSE] path
 
 `path` can be a file or a directory
 
