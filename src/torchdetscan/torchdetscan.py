@@ -452,11 +452,12 @@ class FindNondetermnisticFunctions(ast.NodeVisitor):
         self.generic_visit(node)
 
 
-def lint_file(path: Path, verbose: bool = False):
+def lint_file(path: Path, verbose: bool = False, csv_output: bool = False):
     """Lint a single file.
 
     :param path: The path to the file to lint.
     :param verbose: Whether to enable chatty output.
+    :param csv_output: True if we want CSV output instead of a table
     :returns: None
     """
     with open(path, 'r') as file:
@@ -489,6 +490,8 @@ def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Enable chatty output')
+    parser.add_argument('--csv', '-c', action='store_true',
+                        help='Output in CSV format')
     parser.add_argument('--pytorch-version', '-ptv', default='2.3',
                         choices=deterministic_registry.keys(),
                         help='Version of Pytorch to use for checking')
@@ -508,13 +511,13 @@ def main():
     conditionally_nondeterministic = deterministic_registry[ptv]
 
     if args.path.is_file():
-        lint_file(args.path, args.verbose)
+        lint_file(args.path, args.verbose, args.csv)
     elif args.path.is_dir():
         if args.verbose:
             console.print(
                 f'[cyan]Linting directory: {args.path.absolute()!s}[/cyan]\n')
         for file in args.path.rglob('*.py'):
-            lint_file(file, args.verbose)
+            lint_file(file, args.verbose, args.csv)
     else:
         console.print(f':X: [red]Path does not exist: {args.path}[/red]')
 
