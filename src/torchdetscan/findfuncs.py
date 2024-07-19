@@ -6,12 +6,8 @@
     output suitable for parsing by other programs.
 """
 import ast
-import sys
 import csv
-from rich.table import Table
-from rich.console import Console
-
-
+import sys
 
 # Entries in this dicionary, keyed on Pytorch version, contains
 # operations that ARE deterministic iff torch.use_deterministic_algorithms(True)
