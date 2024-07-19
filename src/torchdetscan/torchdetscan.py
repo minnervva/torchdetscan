@@ -16,8 +16,10 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 
-from src.torchdetscan.findfuncs import FindNondeterministicFunctions, \
-    FindNondeterministicFunctionsTable, deterministic_registry
+from src.torchdetscan.findfuncs import (FindNondeterministicFunctionsCSV, \
+                                        FindNondeterministicFunctionsTable,
+                                        deterministic_registry,
+                                        nondeterministic_registry)
 
 console = Console()
 
@@ -25,10 +27,12 @@ DESCRIPTION = """
 MINNERVA is a linter for finding non-deterministic functions in pytorch code.
 """
 
-def lint_file(path: Path, verbose: bool = False, csv_output: bool = False):
+def lint_file(path: Path, pytorch_version: str = '2.3',
+              verbose: bool = False, csv_output: bool = False):
     """Lint a single file.
 
     :param path: The path to the file to lint.
+    :param pytorch_version: The version of Pytorch to check against.
     :param verbose: Whether to enable chatty output.
     :param csv_output: True if we want CSV output instead of a table
     :returns: None
@@ -40,7 +44,8 @@ def lint_file(path: Path, verbose: bool = False, csv_output: bool = False):
 
     table = Table(title=str(path.absolute()))
 
-    visitor = FindNondeterministicFunctionsTable(table, verbose)
+    visitor = FindNondeterministicFunctionsTable(pytorch_version,
+                                                 table, verbose)
     visitor.visit(tree)
 
     if len(visitor.table.rows) == 0:
@@ -74,17 +79,16 @@ def main():
     if args.verbose:
         print(f"Checking against Pytorch version {ptv}")
 
-    always_nondeterministic = nondeterministic_registry[ptv]
-    conditionally_nondeterministic = deterministic_registry[ptv]
+
 
     if args.path.is_file():
-        lint_file(args.path, args.verbose, args.csv)
+        lint_file(args.path, ptv, args.verbose, args.csv)
     elif args.path.is_dir():
         if args.verbose:
             console.print(
                 f'[cyan]Linting directory: {args.path.absolute()!s}[/cyan]\n')
         for file in args.path.rglob('*.py'):
-            lint_file(file, args.verbose, args.csv)
+            lint_file(file, ptv, args.verbose, args.csv)
     else:
         console.print(f':X: [red]Path does not exist: {args.path}[/red]')
 

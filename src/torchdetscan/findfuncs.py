@@ -270,22 +270,25 @@ class FindNondeterministicFunctions(ast.NodeVisitor):
     interpolate_nondeterministic_keywords = {'linear', 'bilinear', 'bicubic',
                                              'trilinear'}
 
-    def __init__(self, table, verbose=False):
+    def __init__(self, pytorch_version, verbose=False):
         """ Initialize the visitor.
-            :param table: Rich table for reporting non-determ. funcs
+            :param pytorch_version: The version of Pytorch to check against.
             :param verbose: Whether to enable chatty output.
         """
         super().__init__()
 
-        self.table = table
+        self.pytorch_version = pytorch_version
         self.verbose = verbose
+
+        self.always_nondeterministic = nondeterministic_registry[pytorch_version]
+        self.conditionally_nondeterministic = deterministic_registry[pytorch_version]
 
         # Initially we assume that all functions are non-deterministic; we will
         # remove the `conditionally_nondeterministic` from the set of
         # non-deterministic functions iff we encounter a call to
         # torch.use_deterministic_algorithms(True).
-        self.non_deterministic_funcs = (always_nondeterministic |
-                                        conditionally_nondeterministic)
+        self.non_deterministic_funcs = (self.always_nondeterministic |
+                                        self.conditionally_nondeterministic)
 
     def report_nondetermninism(self,
                                function_name,
@@ -326,7 +329,7 @@ class FindNondeterministicFunctions(ast.NodeVisitor):
                 # Just remove the set of conditionally non-deterministic
                 # functions
                 # from the overall set of non-deterministic functions.
-                self.non_deterministic_funcs -= conditionally_nondeterministic
+                self.non_deterministic_funcs -= self.conditionally_nondeterministic
             else:
                 self.table.add_row('use_deterministic_algorithms',
                                    str(node.lineno), str(node.col_offset), '',
@@ -336,7 +339,7 @@ class FindNondeterministicFunctions(ast.NodeVisitor):
                 # Add the set of conditionally non-deterministic functions
                 # from the overall set of non-deterministic functions. Even if
                 # they're already there, it doesn't hurt to try to add them.
-                self.non_deterministic_funcs |= conditionally_nondeterministic
+                self.non_deterministic_funcs |= self.conditionally_nondeterministic
 
     def handle_interpolate(self, node):
         """ This function is called when the visitor finds an `interpolate`
@@ -443,13 +446,14 @@ class FindNondeterministicFunctions(ast.NodeVisitor):
         # Continue searching the tree
         self.generic_visit(node)
 
+
 class FindNondeterministicFunctionsCSV(FindNondeterministicFunctions):
     """ This subclass provides CSV output for non-deterministic functions.
     """
-    def __init__(self, verbose=False):
+    def __init__(self, pytorch_version, verbose=False):
         """ Initialize the visitor.
         """
-        super().__init__(None)
+        super().__init__(pytorch_version, verbose)
 
         fieldnames = ['function', 'line', 'column', 'argument', 'notes']
 
@@ -464,13 +468,14 @@ class FindNondeterministicFunctionsTable(FindNondeterministicFunctions):
         functions
     """
 
-    def __init__(self, table, verbose=False):
+    def __init__(self, pytorch_version, table, verbose=False):
         """ Initialize the visitor.
 
+        :param pytorch_version: The version of Pytorch to check against.
         :param table: Rich table for reporting non-determ. funcs
         :param verbose: Whether to enable chatty output.
         """
-        super().__init__(verbose)
+        super().__init__(pytorch_version, verbose)
 
         self.table = table
 
