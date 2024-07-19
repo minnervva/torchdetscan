@@ -449,7 +449,7 @@ class FindNondeterministicFunctionsCSV(FindNondeterministicFunctions):
 
         fieldnames = ['function', 'line', 'column', 'argument', 'notes']
 
-        self.writer = csv.DictWriter(sys.stdout, fieldname=fieldnames)
+        self.writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
         self.writer.writeheader()
 
     def report_nondetermninism(self,

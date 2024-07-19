@@ -55,8 +55,9 @@ def lint_file(path: Path, pytorch_version: str = '2.3',
             f':white_check_mark: {path}: No non-deterministic functions '
             f'found\n')
     else:
-        console.print(finder.table)
-        console.print('\n')
+        if not csv_output:
+            console.print(finder.table)
+            console.print('\n')
 
 
 def main():
