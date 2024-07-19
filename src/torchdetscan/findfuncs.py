@@ -452,6 +452,57 @@ class FindNondeterministicFunctionsCSV(FindNondeterministicFunctions):
         self.writer = csv.DictWriter(sys.stdout, fieldname=fieldnames)
         self.writer.writeheader()
 
+    def report_nondetermninism(self,
+                               function_name,
+                               line,
+                               column,
+                               argument='',
+                               notes=''):
+        """ This function is called when a non-deterministic function is found.
+
+            :param line: The line number where the non-deterministic function
+            was
+                found.
+            :param column: The column number where the non-deterministic
+            function
+                was found.
+            :param function_name: The name of the non-deterministic function.
+            :param argument: The optional offending argument to the
+                non-deterministic function.
+            :param notes: Optional ancillary notes
+            :returns: None
+        """
+        # Call parent class to increment count
+        super().report_nondetermninism(function_name, line, column,
+                                            argument, notes)
+        self.writer.writerow({'function': function_name,
+                              'line': line,
+                              'column': column,
+                              'argument': argument,
+                              'notes': notes})
+
+    def handle_use_deterministic_algorithms(self, node):
+        """ If we are using deterministic algorithms, then we can remove the
+            `conditionally_nondeterministic` functions from the set of
+            non-deterministic functions.
+        """
+        super().handle_use_deterministic_algorithms(node)
+
+        if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
+            if node.args[0].value:
+                self.writer.writerow({'function': 'use_deterministic_algorithms',
+                                      'line': node.lineno,
+                                      'column': node.col_offset,
+                                      'argument': '',
+                                      'notes': 'use deterministic algorithms '
+                                               'turned ON'})
+            else:
+                self.writer.writerow({'function': 'use_deterministic_algorithms',
+                                      'line': node.lineno,
+                                      'column': node.col_offset,
+                                      'argument': '',
+                                      'notes': 'use deterministic algorithms '
+                                               'turned OFF'})
 
 
 

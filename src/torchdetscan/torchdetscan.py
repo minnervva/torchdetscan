@@ -42,10 +42,12 @@ def lint_file(path: Path, pytorch_version: str = '2.3',
 
     tree = ast.parse(source)
 
-    table = Table(title=str(path.absolute()))
-
-    finder = FindNondeterministicFunctionsTable(pytorch_version,
-                                                 table, verbose)
+    if csv_output:
+        finder = FindNondeterministicFunctionsCSV(pytorch_version, verbose)
+    else:
+        table = Table(title=str(path.absolute()))
+        finder = FindNondeterministicFunctionsTable(pytorch_version,
+                                                     table, verbose)
     finder.visit(tree)
 
     if finder.count == 0:
