@@ -442,12 +442,18 @@ class FindNondeterministicFunctions(ast.NodeVisitor):
 class FindNondeterministicFunctionsCSV(FindNondeterministicFunctions):
     """ This subclass provides CSV output for non-deterministic functions.
     """
-    def __init__(self, pytorch_version, verbose=False):
+    def __init__(self, path, pytorch_version, verbose=False):
         """ Initialize the visitor.
+
+        :param path: The path to the file being linted.
+        :param pytorch_version: The version of Pytorch to check against.
+        :param verbose: Whether to enable chatty output.
         """
         super().__init__(pytorch_version, verbose)
 
-        fieldnames = ['function', 'line', 'column', 'argument', 'notes']
+        self.path = path
+
+        fieldnames = ['path', 'function', 'line', 'column', 'argument', 'notes']
 
         self.writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
         self.writer.writeheader()
@@ -475,7 +481,8 @@ class FindNondeterministicFunctionsCSV(FindNondeterministicFunctions):
         # Call parent class to increment count
         super().report_nondetermninism(function_name, line, column,
                                             argument, notes)
-        self.writer.writerow({'function': function_name,
+        self.writer.writerow({'path': self.path,
+                              'function': function_name,
                               'line': line,
                               'column': column,
                               'argument': argument,
@@ -490,14 +497,16 @@ class FindNondeterministicFunctionsCSV(FindNondeterministicFunctions):
 
         if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
             if node.args[0].value:
-                self.writer.writerow({'function': 'use_deterministic_algorithms',
+                self.writer.writerow({'path': self.path,
+                                      'function': 'use_deterministic_algorithms',
                                       'line': node.lineno,
                                       'column': node.col_offset,
                                       'argument': '',
                                       'notes': 'use deterministic algorithms '
                                                'turned ON'})
             else:
-                self.writer.writerow({'function': 'use_deterministic_algorithms',
+                self.writer.writerow({'path': self.path,
+                                      'function': 'use_deterministic_algorithms',
                                       'line': node.lineno,
                                       'column': node.col_offset,
                                       'argument': '',
