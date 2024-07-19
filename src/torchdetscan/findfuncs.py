@@ -313,8 +313,7 @@ class FindNondeterministicFunctions(ast.NodeVisitor):
             :returns: None
         """
         self.count += 1
-        self.table.add_row(function_name, str(line), str(column), argument,
-                           notes)
+        ## subclasses should update local state accordingly
 
     def handle_use_deterministic_algorithms(self, node):
         """ If we are using deterministic algorithms, then we can remove the
@@ -324,21 +323,11 @@ class FindNondeterministicFunctions(ast.NodeVisitor):
         if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
 
             if node.args[0].value:
-                self.table.add_row('use_deterministic_algorithms',
-                                   str(node.lineno), str(node.col_offset), '',
-                                   f'[red] use deterministic algorithms '
-                                   f'turned [yellow]ON[/yellow][/red]')
-
                 # Just remove the set of conditionally non-deterministic
                 # functions
                 # from the overall set of non-deterministic functions.
                 self.non_deterministic_funcs -= self.conditionally_nondeterministic
             else:
-                self.table.add_row('use_deterministic_algorithms',
-                                   str(node.lineno), str(node.col_offset), '',
-                                   f'[red] use deterministic algorithms '
-                                   f'turned [yellow]OFF[/yellow][/red]')
-
                 # Add the set of conditionally non-deterministic functions
                 # from the overall set of non-deterministic functions. Even if
                 # they're already there, it doesn't hurt to try to add them.
@@ -488,4 +477,50 @@ class FindNondeterministicFunctionsTable(FindNondeterministicFunctions):
         table.add_column('Optional Arguments', justify='left', max_width=25,
                          style='purple')
         table.add_column('Notes', justify='left', max_width=25, style='blue')
+
+
+    def report_nondetermninism(self,
+                               function_name,
+                               line,
+                               column,
+                               argument='',
+                               notes=''):
+        """ This function is called when a non-deterministic function is found.
+
+            :param line: The line number where the non-deterministic function
+            was
+                found.
+            :param column: The column number where the non-deterministic
+            function
+                was found.
+            :param function_name: The name of the non-deterministic function.
+            :param argument: The optional offending argument to the
+                non-deterministic function.
+            :param notes: Optional ancillary notes
+            :returns: None
+        """
+        # Call parent class to increment count
+        super().report_nondetermninism(function_name, line, column,
+                                            argument, notes)
+        self.table.add_row(function_name, str(line), str(column), argument,
+                           notes)
+
+    def handle_use_deterministic_algorithms(self, node):
+        """ If we are using deterministic algorithms, then we can remove the
+            `conditionally_nondeterministic` functions from the set of
+            non-deterministic functions.
+        """
+        super().handle_use_deterministic_algorithms(node)
+
+        if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
+            if node.args[0].value:
+                self.table.add_row('use_deterministic_algorithms',
+                                   str(node.lineno), str(node.col_offset), '',
+                                   f'[red] use deterministic algorithms '
+                                   f'turned [yellow]ON[/yellow][/red]')
+            else:
+                self.table.add_row('use_deterministic_algorithms',
+                                   str(node.lineno), str(node.col_offset), '',
+                                   f'[red] use deterministic algorithms '
+                                   f'turned [yellow]OFF[/yellow][/red]')
 
