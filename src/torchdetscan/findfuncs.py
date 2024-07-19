@@ -277,6 +277,8 @@ class FindNondeterministicFunctions(ast.NodeVisitor):
         """
         super().__init__()
 
+        self.count = 0 # how many non-deterministic functions found
+
         self.pytorch_version = pytorch_version
         self.verbose = verbose
 
@@ -310,6 +312,7 @@ class FindNondeterministicFunctions(ast.NodeVisitor):
             :param notes: Optional ancillary notes
             :returns: None
         """
+        self.count += 1
         self.table.add_row(function_name, str(line), str(column), argument,
                            notes)
 
@@ -486,6 +489,3 @@ class FindNondeterministicFunctionsTable(FindNondeterministicFunctions):
                          style='purple')
         table.add_column('Notes', justify='left', max_width=25, style='blue')
 
-
-        console = Console()
-        console.print(table)

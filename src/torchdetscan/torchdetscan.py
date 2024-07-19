@@ -44,16 +44,16 @@ def lint_file(path: Path, pytorch_version: str = '2.3',
 
     table = Table(title=str(path.absolute()))
 
-    visitor = FindNondeterministicFunctionsTable(pytorch_version,
+    finder = FindNondeterministicFunctionsTable(pytorch_version,
                                                  table, verbose)
-    visitor.visit(tree)
+    finder.visit(tree)
 
-    if len(visitor.table.rows) == 0:
+    if finder.count == 0:
         console.print(
             f':white_check_mark: {path}: No non-deterministic functions '
             f'found\n')
     else:
-        console.print(visitor.table)
+        console.print(finder.table)
         console.print('\n')
 
 
