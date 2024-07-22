@@ -571,6 +571,8 @@ class FindNondeterministicFunctionsTable(FindNondeterministicFunctions):
         # Call parent class to increment count
         super().report_nondetermninism(function_name, line, column,
                                             argument, notes)
+        if function_name in self.conditionally_nondeterministic:
+            notes += "This function can be toggled to deterministic behavior."
         self.table.add_row(function_name, str(line), str(column), argument,
                            notes)
 
