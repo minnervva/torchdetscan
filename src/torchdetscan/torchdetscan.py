@@ -24,7 +24,7 @@ from src.torchdetscan.findfuncs import (FindNondeterministicFunctionsCSV, \
 console = Console()
 
 DESCRIPTION = """
-MINNERVA is a linter for finding non-deterministic functions in pytorch code.
+torchdetscan is a linter for finding non-deterministic functions in pytorch code.
 """
 
 def lint_file(path: Path, pytorch_version: str = '2.3',
