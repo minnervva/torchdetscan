@@ -6,8 +6,6 @@ Linter for finding non-deterministic functions in pytorch code.
 usage: torchdetscan.py [-h] [--verbose VERBOSE] path
 
 `path` can be a file or a directory
-
-TODO need to add support for __get_item__
 """
 import argparse
 import ast
