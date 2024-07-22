@@ -449,7 +449,16 @@ class FindNondeterministicFunctionsCSV(FindNondeterministicFunctions):
 
         self.path = path
 
-        fieldnames = ['path', 'function', 'line', 'column', 'argument', 'notes']
+        # path: to the file being linted
+        # function: the name of the non-deterministic function
+        # line: the line number where the non-deterministic function was found
+        # column: the column number where the non-deterministic function was found
+        # toggleable: whether the function can be made deterministic by calling
+        #             torch.use_deterministic_algorithms(True)
+        # argument: the optional offending argument to the non-deterministic function
+        # notes: optional ancillary notes
+        fieldnames = ['path', 'function', 'line', 'column', 'toggleable',
+                      'argument', 'notes']
 
         self.writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
         self.writer.writeheader()
@@ -477,11 +486,15 @@ class FindNondeterministicFunctionsCSV(FindNondeterministicFunctions):
         # Call parent class to increment count
         super().report_nondetermninism(function_name, line, column,
                                             argument, notes)
+        toggleable = False
+        if function_name in self.conditionally_nondeterministic:
+            toggleable = True
         self.writer.writerow({'path': self.path,
                               'function': function_name,
                               'line': line,
                               'column': column,
                               'argument': argument,
+                              'toggleable': str(toggleable),
                               'notes': notes})
 
     def handle_use_deterministic_algorithms(self, node):
