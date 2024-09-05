@@ -1,3 +1,4 @@
+from requests.packages import package
 from setuptools import setup
 
 # TODO We need to decide if each tool has its own version or the whole package
@@ -10,7 +11,11 @@ with open("README.md", "r") as f:
 
 setup(name='torchdetscan',
       version=__version__,
-      packages=[''],
+      packages=['torchdetscan', 'torchdettest'],
+      package_dir={'torchdetscan': 'src/torchdetscan',
+                   'torchdettest': 'src/torchdettest'},
+      py_modules=['torchdetscan.torchdetscan',
+                  'torchdettest.torchdettest'],
       scripts=['src/torchdetscan/torchdetscan.py',
                'src/torchdettest/torchdettest.py'],
       python_requires=">=3.7.0",
@@ -21,8 +26,8 @@ setup(name='torchdetscan',
       author='Ada Sedova, Mark Coletti, Wael Elwasif',
       author_email='sedovaaa@ornl.gov, colettima@ornl.gov, elwasifwr@ornl.gov',
       description='Finding and testing for non-deterministic functions in pytorch code',
-      entry_points={'console_scripts': ['torchdetscan = torchdetscan:main',
-                                        'torchdettest = torchdettest:main']},
+      entry_points={'console_scripts': ['torchdetscan = torchdetscan.torchdetscan:main',
+                                        'torchdettest = torchdettest.torchdettest:main']},
       install_requires=[
             'rich',
       ],
