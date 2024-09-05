@@ -5,6 +5,7 @@
 """
 import argparse
 
+# TODO add guts of non-deterministic testing here
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
