@@ -1,4 +1,3 @@
-from requests.packages import package
 from setuptools import setup
 
 # TODO We need to decide if each tool has its own version or the whole package
