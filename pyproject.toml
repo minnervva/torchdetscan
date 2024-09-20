@@ -20,3 +20,10 @@ dev = ["ruff", "pytest"]
 
 [project.scripts]
 torchdet = "torchdet.main:main"
+
+[tool.pyright]
+reportUnusedImport = true
+reportUnusedVariable = true
+
+[tool.ruff]
+line-length = 100
