@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
     Defines the FindNondetermnisticFunctions class, which is used to find
     non-deterministic pytorch functions.  It has two subclasses, one for

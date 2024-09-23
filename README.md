@@ -1,27 +1,58 @@
-# torchdetscan: rooting out non-determinism in pytorch code
-A linter for deep learning non-determinism, randomness and 
-reproducibility with applications to scientific computing and simulation.
+# Torchdet
+
+A linter for deep learning non-determinism, randomness and reproducibility with applications to scientific computing and simulation.
+
+## Installation
+
+From your terminal, clone this repository and move into the project directory as shown here:
+
+```text
+git clone https://github.com/minnervva/torchdetscan.git
+cd torchdetscan
+```
+
+Install Python from https://www.python.org or by using various other methods. After installing Python, create and activate a virtual environment within the project directory as follows:
+
+```text
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Install the torchdet package and its dependencies into the virtual environment:
+
+```text
+pip install .
+```
+
+Check installation by running the `torchdet --help` command. This should output the following text in your terminal:
+
+```text
+usage: torchdet [-h] [--verbose] {scan,test} ...
+
+Find non-deterministic functions in your PyTorch code
+
+options:
+  -h, --help     show this help message and exit
+  --verbose, -v  enable chatty output
+
+subcommands:
+  {scan,test}    valid subcommands
+    scan         run the linter
+    test         run the testing tool
+```
 
 ## Usage
 
+Run the scan command line tool:
+
+```text
+torchdet scan examples/pytorch_basic.py
 ```
-usage: torchdetscan.py [-h] [--verbose] [--csv]
-                       [--pytorch-version {1.6.0,1.7.0,1.7.1,1.8.0,1.8.1,1.9.0,1.9.1,1.10,1.11,1.12,1.13,2.0,2.1,2.2,2.3}]
-                       path
 
-MINNERVA is a linter for finding non-deterministic functions in pytorch code.
+Run the test command line tool:
 
-positional arguments:
-  path                  Path to the file or directory in which to recursively
-                        lint
-
-options:
-  -h, --help            show this help message and exit
-  --verbose, -v         Enable chatty output
-  --csv, -c             Output in CSV format
-  --pytorch-version {1.6.0,1.7.0,1.7.1,1.8.0,1.8.1,1.9.0,1.9.1,1.10,1.11,1.12,1.13,2.0,2.1,2.2,2.3}, 
-   -ptv {1.6.0,1.7.0,1.7.1,1.8.0,1.8.1,1.9.0,1.9.1,1.10,1.11,1.12,1.13,2.0,2.
-   1,2.2,2.3}
-                        Version of Pytorch to use for checking
-
+```text
+torchdet test convolve2D
 ```
+
+Use the `--help` option with each subcommand to see more information about that command.

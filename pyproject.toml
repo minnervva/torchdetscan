@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "torchdet"
+version = "0.2"
+description = "Find non-deterministic functions in your pytorch code"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["rich"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+dev = ["ruff", "pytest"]
+
+[project.scripts]
+torchdet = "torchdet.main:main"
+
+[tool.pyright]
+reportUnusedImport = true
+reportUnusedVariable = true
+
+[tool.ruff]
+line-length = 100
