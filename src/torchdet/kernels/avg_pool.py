@@ -1,6 +1,6 @@
 import torch
 from dataclasses import dataclass, asdict
-from kernels.utils import (
+from torchdet.kernels.utils import (
     HyperParamLoop,
     HyperParams,
     LoopParams,

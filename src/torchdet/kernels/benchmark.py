@@ -5,7 +5,7 @@ import numpy as np
 import os
 from scipy import stats
 
-from kernels.utils import *
+from torchdet.kernels.utils import *
 
 cpu = torch.device("cpu")
 

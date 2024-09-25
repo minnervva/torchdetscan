@@ -6,7 +6,9 @@ from rich.console import Console
 
 from .file_linter import lint_file
 from .find_functions import deterministic_registry
+from .benchmark_script import benchmark_map, prompt_user_selection
 
+import pandas as pd
 
 def run_scan(args: argparse.Namespace):
     """Run the scan functionality to lint a file.
@@ -34,7 +36,6 @@ def run_scan(args: argparse.Namespace):
     else:
         console.print(f":X: [red]Path does not exist: {args.path}[/red]")
 
-
 def run_test(args: argparse.Namespace):
     """Run the test functionality.
 
@@ -46,14 +47,30 @@ def run_test(args: argparse.Namespace):
         Namespace arguments from argparse.
     """
     function: str = args.function
+    iterations: int = args.iterations
 
-    if function.endswith(".csv"):
+    if function[0].endswith(".csv"):
         # The input argument is a path to a CSV file
         # The CSV file contains a list of function names
-        print(f"Path to CSV file is {function}")
+        csv = function[0]
+        print(f"Path to CSV file is {csv}")
+        df = pd.read_csv(csv)
+        # We explicitly look for the 'function column'. Any csv with this column will work
+        functions = df['function'].tolist()
+        # Prompt the user for selection
+        selected_functions = prompt_user_selection(functions)
+            
     else:
         # The input argument is the name of a function
-        print(f"Function name is {function}")
+        selected_functions = function
+        
+    # Benchmark the selected functions
+    for func in selected_functions:
+        if func in benchmark_map:
+            print(f"Benchmarking {func}...")
+            benchmark_map[func](iterations)
+        else:
+            print(f"Warning: Function '{func}' is not recognized.")
 
 
 def main():
@@ -90,8 +107,9 @@ def main():
     parser_test = subparsers.add_parser("test", help="run the testing tool")
     parser_test.set_defaults(func=run_test)
 
-    parser_test.add_argument("function", type=str, help="function name or path to csv file")
-
+    parser_test.add_argument("function", type=str, nargs='+', help="function name(s) or path to csv file")
+    parser.add_argument('--iterations', type=int, default=100, help="Number of iterations for benchmarking")
+    
     # Get arguments and run appropriate subcommand function
     args = parser.parse_args()
     args.func(args)
