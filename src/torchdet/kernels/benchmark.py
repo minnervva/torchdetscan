@@ -48,7 +48,27 @@ def nn_latency(model, input, iterations):
     }
 
 
-def nn_get_data(model, input, iterations):
+def nn_get_data_backward(model, input, iterations):
+    try:
+        torch.use_deterministic_algorithms(mode=True)
+        input.requires_grad = True
+        output = model(input)
+        grad = torch.ones(output.shape)
+        output.backward(grad)
+        base_output = input.grad.to(cpu)
+    except:
+        base_output = None
+    torch.use_deterministic_algorithms(mode=False)
+    outputs = []
+    for _ in range(iterations):
+        input.requires_grad = True 
+        output = model(input)
+        grad = torch.ones(output.shape)
+        output.backward(grad)
+        outputs.append(input.grad.to(cpu))
+    return base_output, outputs
+
+def nn_get_data_forward(model, input, iterations):
     try:
         torch.use_deterministic_algorithms(mode=True)
         base_output = model(input).to(cpu)
@@ -60,7 +80,12 @@ def nn_get_data(model, input, iterations):
         outputs.append(model(input).to(cpu))
     return base_output, outputs
 
-
+def nn_get_data(model, input, iterations, backward):
+    if not backward:
+        return nn_get_data_forward(model, input, iterations)
+    else:
+        return nn_get_data_backward(model, input, iterations)
+    
 def func_latency(func, input, iterations):
     torch.use_deterministic_algorithms(mode=False)
     nd_latency = np.array([])
@@ -194,7 +219,7 @@ def get_dataframe(name):
     return data
 
 
-def nn_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterations):
+def nn_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterations, backward: bool=False):
     print("----------Benchmarking {}----------".format(kernel_name))
     data = get_dataframe(kernel_name.__name__)
     for model, input, hyper_params, data_params in kernel_loop_func(
@@ -220,7 +245,7 @@ def nn_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iteration
         ) and set(err_metrics()).issubset(list(data.columns.values)):
             continue
 
-        base_output, outputs = nn_get_data(model, input, iterations=iterations)
+        base_output, outputs = nn_get_data(model, input, iterations=iterations, backward=backward)
         error_metrics = all_error_metrics(base_output, outputs)
         latency_metrics = nn_latency(model, input, iterations=iterations)
         new_row = pd.DataFrame(
