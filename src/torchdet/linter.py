@@ -1,4 +1,4 @@
-"""here."""
+"""Function for linting a file."""
 
 import ast
 from pathlib import Path

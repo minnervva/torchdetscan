@@ -1,14 +1,27 @@
 """Main driver for torchdet command line interface."""
 
 import argparse
+import pandas as pd
 from pathlib import Path
 from rich.console import Console
 
-from .file_linter import lint_file
+from .benchmarks import benchmark_map
 from .find_functions import deterministic_registry
-from .benchmark_script import benchmark_map, prompt_user_selection
+from .linter import lint_file
 
-import pandas as pd
+
+def prompt_user_selection(functions):
+    msg = "The scan found the following non-deterministic functions, would you \
+        like to benchmark any?"
+    print(msg)
+
+    for idx, func in enumerate(functions, start=1):
+        print(f"{idx}. {func}")
+
+    selected_indices = input("Enter numbers of the functions to benchmark (comma-separated): ")
+    selected_funcs = [functions[int(i) - 1] for i in selected_indices.split(",") if i.isdigit()]
+    return selected_funcs
+
 
 def run_scan(args: argparse.Namespace):
     """Run the scan functionality to lint a file.
@@ -24,7 +37,7 @@ def run_scan(args: argparse.Namespace):
     ptv = args.pytorch_version
 
     if args.verbose:
-        print(f"Checking against Pytorch version {ptv}")
+        print(f"Checking against PyTorch version {ptv}")
 
     if args.path.is_file():
         lint_file(args.path, ptv, args.verbose, args.csv)
@@ -35,6 +48,7 @@ def run_scan(args: argparse.Namespace):
             lint_file(file, ptv, args.verbose, args.csv)
     else:
         console.print(f":X: [red]Path does not exist: {args.path}[/red]")
+
 
 def run_test(args: argparse.Namespace):
     """Run the test functionality.
@@ -49,21 +63,29 @@ def run_test(args: argparse.Namespace):
     function: str = args.function
     iterations: int = args.iterations
 
+    if args.valid:
+        print("Valid function names are:")
+        for key in benchmark_map:
+            print(f"- {key}")
+        return
+
     if function[0].endswith(".csv"):
         # The input argument is a path to a CSV file
         # The CSV file contains a list of function names
         csv = function[0]
         print(f"Path to CSV file is {csv}")
         df = pd.read_csv(csv)
+
         # We explicitly look for the 'function column'. Any csv with this column will work
-        functions = df['function'].tolist()
+        functions = df["function"].tolist()
+
         # Prompt the user for selection
         selected_functions = prompt_user_selection(functions)
-            
+
     else:
         # The input argument is the name of a function
         selected_functions = function
-        
+
     # Benchmark the selected functions
     for func in selected_functions:
         if func in benchmark_map:
@@ -76,7 +98,7 @@ def run_test(args: argparse.Namespace):
 def main():
     """Command line interface (CLI) for torchdet."""
     parser = argparse.ArgumentParser(
-        description="Find non-deterministic functions in your PyTorch code"
+        description="Find non-deterministic functions in your PyTorch code."
     )
 
     parser.add_argument("--verbose", "-v", action="store_true", help="enable chatty output")
@@ -84,32 +106,39 @@ def main():
     subparsers = parser.add_subparsers(required=True, title="subcommands", help="valid subcommands")
 
     # Create parser and arguments for the `torchdet scan` subcommand
-    parser_scan = subparsers.add_parser("scan", help="run the linter")
+    parser_scan = subparsers.add_parser("scan", help="run the linter tool")
     parser_scan.set_defaults(func=run_scan)
 
-    parser_scan.add_argument("--csv", "-c", action="store_true", help="output in csv file format")
+    parser_scan.add_argument("--csv", action="store_true", help="output in csv file format")
 
     parser_scan.add_argument(
         "--pytorch-version",
         "-ptv",
         default="2.3",
         choices=deterministic_registry.keys(),
-        help="Version of PyTorch to use for checking",
+        help="version of pytorch to use for checking",
     )
 
     parser_scan.add_argument(
-        "path",
-        type=Path,
-        help="Path to the file or directory in which to recursively lint",
+        "path", type=Path, help="path to file or directory in which to recursively lint"
     )
 
     # Create parser and arguments for the `torchdet test` subcommand
     parser_test = subparsers.add_parser("test", help="run the testing tool")
     parser_test.set_defaults(func=run_test)
 
-    parser_test.add_argument("function", type=str, nargs='+', help="function name(s) or path to csv file")
-    parser.add_argument('--iterations', type=int, default=100, help="Number of iterations for benchmarking")
-    
+    parser_test.add_argument(
+        "function", type=str, nargs="+", help="function name(s) or path to csv file"
+    )
+
+    parser_test.add_argument(
+        "--iterations", type=int, default=100, help="number of iterations for benchmarking"
+    )
+
+    parser_test.add_argument(
+        "--valid", action="store_true", help="show valid function names then abort test"
+    )
+
     # Get arguments and run appropriate subcommand function
     args = parser.parse_args()
     args.func(args)
