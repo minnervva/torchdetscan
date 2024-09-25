@@ -2,11 +2,11 @@ import argparse
 import pandas as pd
 import torch
 
-from kernels.benchmark import *
-from kernels.avg_pool import *
-from kernels.conv import *
-from kernels.scatter import *
-from kernels.utils import *
+from .kernels.benchmark import *
+from .kernels.avg_pool import *
+from .kernels.conv import *
+from .kernels.scatter import *
+from .kernels.utils import *
 
 def benchmark_avg_pool(niterations):
     gpu = torch.device("cuda")
