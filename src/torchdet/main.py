@@ -92,7 +92,8 @@ def run_test(args: argparse.Namespace):
             print(f"Benchmarking {func}...")
             benchmark_map[func](iterations)
         else:
-            print(f"Warning: Function '{func}' is not recognized.")
+            print(f"Warning: function '{func}' is not recognized.")
+            print(f"Run 'torchdet test {func} --valid' for valid function names.")
 
 
 def main():
