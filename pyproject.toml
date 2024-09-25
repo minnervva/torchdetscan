@@ -9,9 +9,11 @@ description = "Find non-deterministic functions in your pytorch code"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "rich",
+    "torch>=1.6.0,<2.3",
+    "numpy<2.0",
     "pandas",
-    "torch>=1.6.0,<2.3"
+    "rich",
+    "scipy"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
