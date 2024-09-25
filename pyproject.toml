@@ -8,7 +8,11 @@ version = "0.2"
 description = "Find non-deterministic functions in your pytorch code"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["rich"]
+dependencies = [
+    "rich",
+    "pandas",
+    "torch>=1.6.0,<2.3"
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",

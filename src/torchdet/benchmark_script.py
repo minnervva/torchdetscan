@@ -56,24 +56,3 @@ def prompt_user_selection(functions):
     selected_indices = input("Enter the numbers of the functions to benchmark (comma-separated): ")
     selected_funcs = [functions[int(i) - 1] for i in selected_indices.split(",") if i.isdigit()]
     return selected_funcs
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Benchmark specified functions.")
-    parser.add_argument('csv', help="Path to CSV file containing functions to benchmark")
-    parser.add_argument('--iterations', type=int, default=100, help="Number of iterations for benchmarking")
-    
-    args = parser.parse_args()
-    
-    # Assuming the functions are read from the CSV file
-    df = pd.read_csv(args.csv)
-    functions = df['function'].tolist()
-
-    # Prompt the user for selection
-    selected_functions = prompt_user_selection(functions)
-    # Benchmark the selected functions
-    for func in selected_functions:
-        if func in benchmark_map:
-            print(f"Benchmarking {func}...")
-            benchmark_map[func](args.iterations)
-        else:
-            print(f"Warning: Function '{func}' is not recognized.")
