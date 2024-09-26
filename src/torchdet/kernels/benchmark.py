@@ -5,7 +5,6 @@ import numpy as np
 import os
 from scipy import stats
 
-from torchdet.kernels.utils import *
 
 cpu = torch.device("cpu")
 
@@ -61,12 +60,13 @@ def nn_get_data_backward(model, input, iterations):
     torch.use_deterministic_algorithms(mode=False)
     outputs = []
     for _ in range(iterations):
-        input.requires_grad = True 
+        input.requires_grad = True
         output = model(input)
         grad = torch.ones(output.shape)
         output.backward(grad)
         outputs.append(input.grad.to(cpu))
     return base_output, outputs
+
 
 def nn_get_data_forward(model, input, iterations):
     try:
@@ -80,12 +80,14 @@ def nn_get_data_forward(model, input, iterations):
         outputs.append(model(input).to(cpu))
     return base_output, outputs
 
+
 def nn_get_data(model, input, iterations, backward):
     if not backward:
         return nn_get_data_forward(model, input, iterations)
     else:
         return nn_get_data_backward(model, input, iterations)
-    
+
+
 def func_latency(func, input, iterations):
     torch.use_deterministic_algorithms(mode=False)
     nd_latency = np.array([])
@@ -177,9 +179,7 @@ def err_metrics():
 
 def all_error_metrics(base_output, outputs):
     norms = np.array([torch.norm(tensor).item() for tensor in outputs])
-    num_dif = np.array(
-        [num_different_elems(outputs[0], output) for output in outputs[1:]]
-    )
+    num_dif = np.array([num_different_elems(outputs[0], output) for output in outputs[1:]])
     errs = np.array([sanjif_error(outputs[0], output) for output in outputs[1:]])
 
     if base_output == None:
@@ -194,9 +194,7 @@ def all_error_metrics(base_output, outputs):
             "norm_tstat": None,
             "norm_pvalue": None,
         }
-    norm_tstat, norm_pvalue = stats.ttest_1samp(
-        norms, popmean=torch.norm(base_output).item()
-    )
+    norm_tstat, norm_pvalue = stats.ttest_1samp(norms, popmean=torch.norm(base_output).item())
     return {
         "det_norm": torch.norm(base_output).item(),
         "norm_mean": np.mean(norms),
@@ -219,7 +217,9 @@ def get_dataframe(name):
     return data
 
 
-def nn_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterations, backward: bool=False):
+def nn_benchmark(
+    params_loop, dim_loop, kernel_loop_func, kernel_name, iterations, backward: bool = False
+):
     print("----------Benchmarking {}----------".format(kernel_name))
     data = get_dataframe(kernel_name.__name__)
     for model, input, hyper_params, data_params in kernel_loop_func(
@@ -229,12 +229,7 @@ def nn_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iteration
             completed = set(
                 tuple(row)
                 for row in data[
-                    [
-                        *(
-                            list(hyper_params.asdict().keys())
-                            + list(data_params.asdict().keys())
-                        )
-                    ]
+                    [*(list(hyper_params.asdict().keys()) + list(data_params.asdict().keys()))]
                 ].to_records(index=False)
             )
         else:
@@ -272,12 +267,7 @@ def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterati
             completed = set(
                 tuple(row)
                 for row in data[
-                    [
-                        *(
-                            list(hyper_params.asdict().keys())
-                            + list(data_params.asdict().keys())
-                        )
-                    ]
+                    [*(list(hyper_params.asdict().keys()) + list(data_params.asdict().keys()))]
                 ].to_records(index=False)
             )
         else:
@@ -291,12 +281,7 @@ def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterati
         error_metrics = all_error_metrics(base_output, outputs)
         latency_metrics = func_latency(model, input, iterations=iterations)
         new_row = pd.DataFrame(
-            [
-                hyper_params.asdict()
-                | data_params.asdict()
-                | error_metrics
-                | latency_metrics
-            ]
+            [hyper_params.asdict() | data_params.asdict() | error_metrics | latency_metrics]
         )
         data = pd.concat([data, new_row], ignore_index=True)
     filename = "data/{}.pkl".format(kernel_name)

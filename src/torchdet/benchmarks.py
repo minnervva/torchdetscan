@@ -2,13 +2,18 @@
 
 import torch
 
-from .kernels.benchmark import *
-from .kernels.avg_pool import *
-from .kernels.conv import *
-from .kernels.scatter import *
-from .kernels.utils import *
+from .kernels.benchmark import nn_benchmark, func_benchmark
+from .kernels.avg_pool import AvgPoolLoop, avg_pool_loop
+from .kernels.avg_pool import BatchDimLoop
+from .kernels.conv import ConvLoop, convolution_loop
+from .kernels.scatter import ScatterLoop, ScatterDimLoop, scatter_loop
+from .kernels.scatter_reduce import ScatterReduceLoop, ScatterReduceDimLoop, scatter_reduce_loop
+from .kernels.gather import GatherLoop, GatherDimLoop, gather_loop
+from .kernels.index_add import IndexAddLoop, IndexAddDimLoop, index_add_loop
+from .kernels.index_copy import index_copy_loop
+from .kernels.index_put import IndexPutLoop, IndexPutDimLoop, index_put_loop
 
-PYTORCH_DEVICE = "cpu"  # use `cpu` or `cuda` for the string
+PYTORCH_DEVICE = "cpu"  # use `cpu` or `cuda` for this string
 
 
 def benchmark_avg_pool(niterations):

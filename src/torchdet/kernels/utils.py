@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict, fields
 import itertools
-from typing import Callable, List, Tuple
+from typing import Callable, List
 import torch
 
 
