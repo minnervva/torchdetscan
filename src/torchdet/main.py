@@ -56,18 +56,25 @@ def run_test(args: argparse.Namespace):
             print(f"- {key}")
         return
 
-    if function[0].endswith(".csv"):
-        # The input argument is a path to a CSV file
-        # The CSV file contains a list of function names
+    if function[0].endswith(".csv") and args.select:
+        # The input argument is a path to a csv file which contains list of functions
         csv = function[0]
-        print(f"Path to CSV file is {csv}")
-        df = pd.read_csv(csv)
+        print(f"Path to the CSV file is {csv}")
 
-        # We explicitly look for the 'function column', any csv with this column should work
+        # Look for the 'function column', any csv with this column should work
+        df = pd.read_csv(csv)
         functions = df["function"].tolist()
 
         # Get user selected functions
         selected_functions = [functions[int(i) - 1] for i in args.select.split(",") if i.isdigit()]
+    elif function[0].endswith(".csv"):
+        # The input argument is a path to a csv file which contains list of functions
+        csv = function[0]
+        print(f"Path to the CSV file is {csv}")
+
+        df = pd.read_csv(csv)
+        functions = df["function"].tolist()
+        selected_functions = functions
     else:
         # The input argument is the name of a function
         selected_functions = function
