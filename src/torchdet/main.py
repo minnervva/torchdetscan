@@ -10,19 +10,6 @@ from .find_functions import deterministic_registry
 from .linter import lint_file
 
 
-def prompt_user_selection(functions):
-    msg = "The scan found the following non-deterministic functions, would you \
-        like to benchmark any?"
-    print(msg)
-
-    for idx, func in enumerate(functions, start=1):
-        print(f"{idx}. {func}")
-
-    selected_indices = input("Enter numbers of the functions to benchmark (comma-separated): ")
-    selected_funcs = [functions[int(i) - 1] for i in selected_indices.split(",") if i.isdigit()]
-    return selected_funcs
-
-
 def run_scan(args: argparse.Namespace):
     """Run the scan functionality to lint a file.
 
@@ -60,7 +47,7 @@ def run_test(args: argparse.Namespace):
     args
         Namespace arguments from argparse.
     """
-    function: str = args.function
+    function: list[str] = args.function
     iterations: int = args.iterations
 
     if args.valid:
@@ -76,12 +63,11 @@ def run_test(args: argparse.Namespace):
         print(f"Path to CSV file is {csv}")
         df = pd.read_csv(csv)
 
-        # We explicitly look for the 'function column'. Any csv with this column will work
+        # We explicitly look for the 'function column', any csv with this column should work
         functions = df["function"].tolist()
 
-        # Prompt the user for selection
-        selected_functions = prompt_user_selection(functions)
-
+        # Get user selected functions
+        selected_functions = [functions[int(i) - 1] for i in args.select.split(",") if i.isdigit()]
     else:
         # The input argument is the name of a function
         selected_functions = function
@@ -139,6 +125,8 @@ def main():
     parser_test.add_argument(
         "--valid", action="store_true", help="show valid function names then abort test"
     )
+
+    parser_test.add_argument("--select", type=str, help="comma-separated list of functions in csv")
 
     # Get arguments and run appropriate subcommand function
     args = parser.parse_args()
