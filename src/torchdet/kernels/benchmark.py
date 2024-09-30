@@ -1,6 +1,7 @@
 import torch
 import pathlib
 import pandas as pd
+from datetime import datetime
 import time
 import numpy as np
 from scipy import stats
@@ -278,6 +279,16 @@ def nn_benchmark(
 
 
 def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterations):
+    """ Benchmark the given kernel
+
+    :param params_loop: The parameters loop
+    :param dim_loop: The dimensions loop
+    :param kernel_loop_func: The kernel loop function
+    :param kernel_name: The name of the kernel
+    :param iterations: The number of iterations to test the kernel for each
+        setting
+    :returns: None
+    """
     print("----------Benchmarking {}----------".format(kernel_name))
     data = get_dataframe(kernel_name)
     for model, input, hyper_params, data_params in kernel_loop_func(
@@ -304,6 +315,13 @@ def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterati
             [hyper_params.asdict() | data_params.asdict() | error_metrics | latency_metrics]
         )
         data = pd.concat([data, new_row], ignore_index=True)
+
+    # Add column identifying what kernel was benchmarked since --outfile may
+    # have a file name that does not identify the kernel.
+    data['kernel'] = kernel_name
+
+    # Add another column to capture timestamp of *when* the data was collected
+    data['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Create path to data file and make `data` directory if needed
     # Then write pickled data to the file
