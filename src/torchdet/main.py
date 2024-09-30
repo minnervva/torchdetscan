@@ -55,6 +55,10 @@ def run_test(args: argparse.Namespace):
         for key in benchmark_map:
             print(f"- {key}")
         return
+    elif not args.function:
+        # If --valid is not provided, and functions are missing, raise an error
+        print("the following arguments are required: function")
+        return
 
     if function[0].endswith(".csv"):
         # The input argument is a path to a csv file which contains list of functions
@@ -109,26 +113,33 @@ def main():
     )
 
     parser_scan.add_argument(
-        "path", type=Path, help="path to file or directory in which to recursively lint"
+        "path", type=Path,
+            help="path to file or directory in which to recursively lint"
     )
 
     # Create parser and arguments for the `torchdet test` subcommand
-    parser_test = subparsers.add_parser("test", help="run the testing tool")
+    parser_test = subparsers.add_parser("test",
+                                        help="run the testing tool")
     parser_test.set_defaults(func=run_test)
 
     parser_test.add_argument(
-        "function", type=str, nargs="+", help="function name(s) or path to csv file"
+        "function", type=str,
+            nargs="*", # '*' instead of '?' to allow --valid to override need
+            help="function name(s) or path to csv file"
     )
 
     parser_test.add_argument(
-        "--iterations", type=int, default=100, help="number of iterations for benchmarking"
+        "--iterations", type=int, default=100,
+            help="number of iterations for benchmarking"
     )
 
     parser_test.add_argument(
-        "--valid", action="store_true", help="show valid function names then abort test"
+        "--valid", action="store_true",
+            help="show valid function names then abort test"
     )
 
-    parser_test.add_argument("--select", type=str, help="comma-separated list of functions in csv")
+    parser_test.add_argument("--select", type=str,
+                             help="comma-separated list of functions in csv")
 
     # Get arguments and run appropriate subcommand function
     args = parser.parse_args()
