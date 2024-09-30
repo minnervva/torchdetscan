@@ -98,7 +98,9 @@ def main():
 
     subparsers = parser.add_subparsers(required=True, title="subcommands", help="valid subcommands")
 
+    ##
     # Create parser and arguments for the `torchdet scan` subcommand
+    ##
     parser_scan = subparsers.add_parser("scan", help="run the linter tool")
     parser_scan.set_defaults(func=run_scan)
 
@@ -117,7 +119,9 @@ def main():
             help="path to file or directory in which to recursively lint"
     )
 
+    ##
     # Create parser and arguments for the `torchdet test` subcommand
+    ##
     parser_test = subparsers.add_parser("test",
                                         help="run the testing tool")
     parser_test.set_defaults(func=run_test)
@@ -140,6 +144,11 @@ def main():
 
     parser_test.add_argument("--select", type=str,
                              help="comma-separated list of functions in csv")
+
+    parser_test.add_argument('--outfile', type=str,
+                             help='Output for benchmark results. Defaults to '
+                                  'a pickle file of a pandas dataframe with the '
+                                  'named "<function name>.pkl"')
 
     # Get arguments and run appropriate subcommand function
     args = parser.parse_args()
