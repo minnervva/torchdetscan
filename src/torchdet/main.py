@@ -56,7 +56,7 @@ def run_test(args: argparse.Namespace):
             print(f"- {key}")
         return
 
-    if function[0].endswith(".csv") and args.select:
+    if function[0].endswith(".csv"):
         # The input argument is a path to a csv file which contains list of functions
         csv = function[0]
         print(f"Path to the CSV file is {csv}")
@@ -65,16 +65,11 @@ def run_test(args: argparse.Namespace):
         df = pd.read_csv(csv)
         functions = df["function"].tolist()
 
-        # Get user selected functions
-        selected_functions = [functions[int(i) - 1] for i in args.select.split(",") if i.isdigit()]
-    elif function[0].endswith(".csv"):
-        # The input argument is a path to a csv file which contains list of functions
-        csv = function[0]
-        print(f"Path to the CSV file is {csv}")
-
-        df = pd.read_csv(csv)
-        functions = df["function"].tolist()
-        selected_functions = functions
+        if args.select:
+            # Get user selected functions
+            selected_functions = [functions[int(i) - 1] for i in args.select.split(",") if i.isdigit()]
+        else:
+            selected_functions = functions
     else:
         # The input argument is the name of a function
         selected_functions = function
@@ -138,3 +133,6 @@ def main():
     # Get arguments and run appropriate subcommand function
     args = parser.parse_args()
     args.func(args)
+
+if __name__ == '__main__':
+    main()
