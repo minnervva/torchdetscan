@@ -1,7 +1,13 @@
 """Functions for running benchmarks."""
 
+import warnings
 import torch
 from . import kernels as kn
+
+# Suppress scipy warning
+warnings.filterwarnings("ignore",
+                        message="Precision loss occurred in moment calculation "
+                                "due to catastrophic cancellation")
 
 PYTORCH_DEVICE = "cpu"  # use `cpu` or `cuda` for this string
 

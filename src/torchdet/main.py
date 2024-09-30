@@ -147,8 +147,8 @@ def main():
 
     parser_test.add_argument('--outfile', type=str,
                              help='Output for benchmark results. Defaults to '
-                                  'a pickle file of a pandas dataframe with the '
-                                  'named "<function name>.pkl"')
+                                  'a pickle file of a pandas dataframe with the'
+                                  ' named "<function name>.pkl"')
 
     # Get arguments and run appropriate subcommand function
     args = parser.parse_args()
