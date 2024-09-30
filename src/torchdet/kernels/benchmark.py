@@ -1,8 +1,8 @@
 import torch
+import pathlib
 import pandas as pd
 import time
 import numpy as np
-import os
 from scipy import stats
 
 
@@ -208,12 +208,27 @@ def all_error_metrics(base_output, outputs):
     }
 
 
-def get_dataframe(name):
-    filename = "data/{}.pkl".format(name)
-    if os.path.isfile(filename):
-        data = pd.read_pickle(filename)
+def get_dataframe(name: str) -> pd.DataFrame | pd.Series:
+    """Get dataframe from pickle file.
+
+    Parameters
+    ----------
+    name
+        The file name for the pickled data.
+
+    Returns
+    -------
+    data
+        A data frame containing the pickled data if it already exists;
+        otherwise an empty data frame.
+    """
+    data_file = f"data/{name}.pkl"
+
+    if pathlib.Path(data_file).is_file():
+        data = pd.read_pickle(data_file)
     else:
         data = pd.DataFrame()
+
     return data
 
 
@@ -253,8 +268,13 @@ def nn_benchmark(
             ]
         )
         data = pd.concat([data, new_row], ignore_index=True)
-    filename = "data/{}.pkl".format(kernel_name.__name__)
-    data.to_pickle(filename)
+
+    # Create path to data file and make `data` directory if needed
+    # Then write pickled data to the file
+    data_file = f"data/{kernel_name.__name__}.pkl"
+    pathlib.Path(data_file).parent.mkdir(parents=True, exist_ok=True)
+
+    data.to_pickle(data_file)
 
 
 def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterations):
@@ -284,5 +304,10 @@ def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterati
             [hyper_params.asdict() | data_params.asdict() | error_metrics | latency_metrics]
         )
         data = pd.concat([data, new_row], ignore_index=True)
-    filename = "data/{}.pkl".format(kernel_name)
-    data.to_pickle(filename)
+
+    # Create path to data file and make `data` directory if needed
+    # Then write pickled data to the file
+    data_file = f"data/{kernel_name}.pkl"
+    pathlib.Path(data_file).parent.mkdir(parents=True, exist_ok=True)
+
+    data.to_pickle(data_file)
