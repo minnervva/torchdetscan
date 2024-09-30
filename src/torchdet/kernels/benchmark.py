@@ -5,7 +5,7 @@ from datetime import datetime
 import time
 import numpy as np
 from scipy import stats
-
+from tqdm import tqdm
 
 cpu = torch.device("cpu")
 
@@ -234,13 +234,13 @@ def get_dataframe(name: str) -> pd.DataFrame | pd.Series:
 
 
 def nn_benchmark(
-    params_loop, dim_loop, kernel_loop_func, kernel_name, iterations, backward: bool = False
+    params_loop, dim_loop, kernel_loop_func, kernel_name, iterations, backward: bool = False, outdir='data'
 ):
     print("----------Benchmarking {}----------".format(kernel_name))
     data = get_dataframe(kernel_name.__name__)
-    for model, input, hyper_params, data_params in kernel_loop_func(
+    for model, input, hyper_params, data_params in tqdm(kernel_loop_func(
         kernel_name, params_loop, dim_loop
-    ):
+    )):
         if data.shape[0] > 0:
             completed = set(
                 tuple(row)
@@ -272,13 +272,13 @@ def nn_benchmark(
 
     # Create path to data file and make `data` directory if needed
     # Then write pickled data to the file
-    data_file = f"data/{kernel_name.__name__}.pkl"
+    data_file = f"{outdir}/{kernel_name.__name__}.pkl"
     pathlib.Path(data_file).parent.mkdir(parents=True, exist_ok=True)
 
     data.to_pickle(data_file)
 
 
-def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterations):
+def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterations, outdir):
     """ Benchmark the given kernel
 
     :param params_loop: The parameters loop
@@ -287,13 +287,14 @@ def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterati
     :param kernel_name: The name of the kernel
     :param iterations: The number of iterations to test the kernel for each
         setting
+    :param outdir: The output directory
     :returns: None
     """
     print("----------Benchmarking {}----------".format(kernel_name))
     data = get_dataframe(kernel_name)
-    for model, input, hyper_params, data_params in kernel_loop_func(
+    for model, input, hyper_params, data_params in tqdm(kernel_loop_func(
         kernel_name, params_loop, dim_loop
-    ):
+    )):
         if data.shape[0] > 0:
             completed = set(
                 tuple(row)
@@ -325,7 +326,7 @@ def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterati
 
     # Create path to data file and make `data` directory if needed
     # Then write pickled data to the file
-    data_file = f"data/{kernel_name}.pkl"
+    data_file = f"{outdir}/{kernel_name}.pkl"
     pathlib.Path(data_file).parent.mkdir(parents=True, exist_ok=True)
 
     data.to_pickle(data_file)

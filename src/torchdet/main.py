@@ -49,6 +49,7 @@ def run_test(args: argparse.Namespace):
     """
     function: list[str] = args.function
     iterations: int = args.iterations
+    outdir = Path(args.outdir) if args.outdir else Path(".")
 
     if args.valid:
         print("Valid function names are:")
@@ -82,7 +83,7 @@ def run_test(args: argparse.Namespace):
     for func in selected_functions:
         if func in benchmark_map:
             print(f"Benchmarking {func}...")
-            benchmark_map[func](iterations)
+            benchmark_map[func](iterations, outdir)
         else:
             print(f"Warning: function '{func}' is not recognized.")
             print(f"Run 'torchdet test {func} --valid' for valid function names.")
@@ -145,10 +146,12 @@ def main():
     parser_test.add_argument("--select", type=str,
                              help="comma-separated list of functions in csv")
 
-    parser_test.add_argument('--outfile', type=str,
-                             help='Output for benchmark results. Defaults to '
-                                  'a pickle file of a pandas dataframe with the'
-                                  ' named "<function name>.pkl"')
+    parser_test.add_argument('--outdir', type=str,
+                             default='data',
+                             help='Output directory for benchmark results. '
+                                  'Data is written to a pickle file of a '
+                                  'pandas dataframe named '
+                                  '"<function name>.pkl"')
 
     # Get arguments and run appropriate subcommand function
     args = parser.parse_args()
