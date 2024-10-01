@@ -9,6 +9,7 @@ from .gather import GatherLoop, GatherDimLoop, gather_loop
 from .index_add import IndexAddLoop, IndexAddDimLoop, index_add_loop
 from .index_copy import index_copy_loop
 from .index_put import IndexPutLoop, IndexPutDimLoop, index_put_loop
+from .loss import NLLLossLoop, NLLLossDimLoop, nll_loss_loop
 
 __all__ = [
     "nn_benchmark",
@@ -33,5 +34,7 @@ __all__ = [
     "index_copy_loop",
     "IndexPutLoop",
     "IndexPutDimLoop",
-    "index_put_loop"
+    "index_put_loop" "NLLLossLoop",
+    "NLLLossDimLoop",
+    "nll_loss_loop",
 ]
