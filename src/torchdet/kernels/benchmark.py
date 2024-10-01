@@ -179,7 +179,9 @@ def err_metrics():
 
 def all_error_metrics(base_output, outputs):
     norms = np.array([torch.norm(tensor).item() for tensor in outputs])
-    num_dif = np.array([num_different_elems(outputs[0], output) for output in outputs[1:]])
+    num_dif = np.array(
+        [num_different_elems(outputs[0], output) for output in outputs[1:]]
+    )
     errs = np.array([sanjif_error(outputs[0], output) for output in outputs[1:]])
 
     if base_output == None:
@@ -194,7 +196,9 @@ def all_error_metrics(base_output, outputs):
             "norm_tstat": None,
             "norm_pvalue": None,
         }
-    norm_tstat, norm_pvalue = stats.ttest_1samp(norms, popmean=torch.norm(base_output).item())
+    norm_tstat, norm_pvalue = stats.ttest_1samp(
+        norms, popmean=torch.norm(base_output).item()
+    )
     return {
         "det_norm": torch.norm(base_output).item(),
         "norm_mean": np.mean(norms),
@@ -233,7 +237,12 @@ def get_dataframe(name: str) -> pd.DataFrame | pd.Series:
 
 
 def nn_benchmark(
-    params_loop, dim_loop, kernel_loop_func, kernel_name, iterations, backward: bool = False
+    params_loop,
+    dim_loop,
+    kernel_loop_func,
+    kernel_name,
+    iterations,
+    backward: bool = False,
 ):
     print("----------Benchmarking {}----------".format(kernel_name))
     data = get_dataframe(kernel_name.__name__)
@@ -244,7 +253,12 @@ def nn_benchmark(
             completed = set(
                 tuple(row)
                 for row in data[
-                    [*(list(hyper_params.asdict().keys()) + list(data_params.asdict().keys()))]
+                    [
+                        *(
+                            list(hyper_params.asdict().keys())
+                            + list(data_params.asdict().keys())
+                        )
+                    ]
                 ].to_records(index=False)
             )
         else:
@@ -255,7 +269,9 @@ def nn_benchmark(
         ) and set(err_metrics()).issubset(list(data.columns.values)):
             continue
 
-        base_output, outputs = nn_get_data(model, input, iterations=iterations, backward=backward)
+        base_output, outputs = nn_get_data(
+            model, input, iterations=iterations, backward=backward
+        )
         error_metrics = all_error_metrics(base_output, outputs)
         latency_metrics = nn_latency(model, input, iterations=iterations)
         new_row = pd.DataFrame(
@@ -287,7 +303,12 @@ def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterati
             completed = set(
                 tuple(row)
                 for row in data[
-                    [*(list(hyper_params.asdict().keys()) + list(data_params.asdict().keys()))]
+                    [
+                        *(
+                            list(hyper_params.asdict().keys())
+                            + list(data_params.asdict().keys())
+                        )
+                    ]
                 ].to_records(index=False)
             )
         else:
@@ -301,7 +322,12 @@ def func_benchmark(params_loop, dim_loop, kernel_loop_func, kernel_name, iterati
         error_metrics = all_error_metrics(base_output, outputs)
         latency_metrics = func_latency(model, input, iterations=iterations)
         new_row = pd.DataFrame(
-            [hyper_params.asdict() | data_params.asdict() | error_metrics | latency_metrics]
+            [
+                hyper_params.asdict()
+                | data_params.asdict()
+                | error_metrics
+                | latency_metrics
+            ]
         )
         data = pd.concat([data, new_row], ignore_index=True)
 
