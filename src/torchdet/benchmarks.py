@@ -227,6 +227,24 @@ def benchmark_nll_loss(niterations):
     )
 
 
+def benchmark_ctc_loss(niterations):
+    device = torch.device(PYTORCH_DEVICE)
+    ctc_loss_params = kn.CTCLossLoop(
+        reduction=["none", "mean", "sum"],
+        zero_infinity=[False, True],
+        device=[device],
+        dtype=[torch.float32],
+        distribution=[torch.nn.init.normal_],
+    )
+    ctc_loss_dims = kn.CTCLossDimLoop(
+        input_length=[5, 10], batch_size=[2, 3], classes=[3, 5, 10]
+    )
+
+    kn.func_benchmark(
+        ctc_loss_params, ctc_loss_dims, kn.ctc_loss_loop, "CTCLoss", niterations
+    )
+
+
 # Mapping function names to their benchmark functions
 benchmark_map = {
     "AvgPool3d": benchmark_avg_pool,
@@ -239,5 +257,6 @@ benchmark_map = {
     "IndexCopy": benchmark_index_copy,
     "IndexPut": benchmark_index_put,
     "NLLLoss": benchmark_nll_loss,
+    "CTCLoss": benchmark_ctc_loss,
     # Add additional function mappings here...
 }
