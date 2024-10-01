@@ -240,8 +240,13 @@ def benchmark_ctc_loss(niterations):
         input_length=[5, 10], batch_size=[2, 3], classes=[3, 5, 10]
     )
 
-    kn.func_benchmark(
-        ctc_loss_params, ctc_loss_dims, kn.ctc_loss_loop, "CTCLoss", niterations
+    kn.nn_benchmark(
+        ctc_loss_params,
+        ctc_loss_dims,
+        kn.ctc_loss_loop,
+        torch.nn.CTCLoss,
+        niterations,
+        backward=True,
     )
 
 

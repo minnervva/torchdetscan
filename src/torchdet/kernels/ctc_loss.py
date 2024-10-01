@@ -52,9 +52,6 @@ def ctc_loss_loop(func_name: str, hyper_param_loop, data_loop):
                 low=1, high=C, size=(sum(target_lengths),), dtype=torch.long
             )
 
-            yield ctc_loss, {
-                "log_probs": input,
-                "targets": target,
-                "input_lengths": input_lengths,
-                "target_lengths": target_lengths,
-            }, nll_loss_params, dim_params
+            ctc_loss_x = lambda x: ctc_loss(x, target, input_lengths, target_lengths)
+
+            yield ctc_loss_x, input, nll_loss_params, dim_params
