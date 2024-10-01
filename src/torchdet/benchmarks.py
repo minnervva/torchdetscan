@@ -169,6 +169,19 @@ def benchmark_index_put(niterations, outdir):
     kn.func_benchmark(index_put_params, index_put_dims, kn.index_put_loop, "index_put", niterations, outdir)
 
 
+def benchmark_median(niterations, outdir):
+    device = torch.device(PYTORCH_DEVICE)
+    median_params = kn.MedianLoop(keepdim=[True, False],
+                                  device=[device],
+                                  dtype=[torch.float32],
+                                  distribution=[torch.nn.init.normal_], )
+    median_dims = kn.MedianDimLoop(input_dim=[(100,), (1_000,)],
+            # reduction_ratio=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+    )
+    kn.func_benchmark(median_params, median_dims, kn.median_loop, "median",
+                      niterations, outdir)
+
+
 # Mapping function names to their benchmark functions
 benchmark_map = {
     "AvgPool3d": benchmark_avg_pool,
@@ -181,4 +194,5 @@ benchmark_map = {
     "IndexCopy": benchmark_index_copy,
     "IndexPut": benchmark_index_put,
     # Add additional function mappings here...
+    "Median" : benchmark_median
 }
