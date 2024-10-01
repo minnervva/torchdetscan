@@ -171,7 +171,8 @@ def benchmark_index_put(niterations, outdir):
 
 def benchmark_median(niterations, outdir):
     device = torch.device(PYTORCH_DEVICE)
-    median_params = kn.MedianLoop(keepdim=[True, False],
+    median_params = kn.MedianLoop(#keepdim=[True, False],
+            dim=[0],
                                   device=[device],
                                   dtype=[torch.float32],
                                   distribution=[torch.nn.init.normal_], )

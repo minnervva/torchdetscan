@@ -7,12 +7,12 @@ from typing import List, Tuple
 
 @dataclass
 class MedianHyperParams(HyperParams):
-    keepdim: bool
+    dim: int
 
 
 @dataclass
 class MedianLoop(HyperParamLoop):
-    keepdim: List[bool]
+    dim: List[int]
 
 
 @dataclass
@@ -49,6 +49,6 @@ def median_loop(func_name, median_loop, data_loop):
 
             yield torch.median, {
                 "input": input,
-                "dim": dim_params.input_dim, # FIXME not sure if this is the right dim
-                "keepdim": median_params.keepdim,
+                # "dim": median_params.input_dim,
+                # "keepdim": median_params.keepdim,
             }, median_params, dim_params
