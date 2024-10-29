@@ -10,6 +10,7 @@ from .index_add import IndexAddLoop, IndexAddDimLoop, index_add_loop
 from .index_copy import index_copy_loop
 from .index_put import IndexPutLoop, IndexPutDimLoop, index_put_loop
 from .median import MedianLoop, MedianDimLoop, median_loop
+from .bmm import BmmLoop, BmmDimLoop, bmm_loop
 
 __all__ = [
     "nn_benchmark",
@@ -38,4 +39,5 @@ __all__ = [
     "MedianLoop",
     "MedianLoop",
     "median_put_loop"
+    "BmmLoop"
 ]

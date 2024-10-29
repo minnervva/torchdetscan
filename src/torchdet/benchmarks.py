@@ -172,7 +172,7 @@ def benchmark_index_put(niterations, outdir):
 def benchmark_median(niterations, outdir):
     device = torch.device(PYTORCH_DEVICE)
     median_params = kn.MedianLoop(#keepdim=[True, False],
-            dim=[0],
+                                  dim=[0],
                                   device=[device],
                                   dtype=[torch.float32],
                                   distribution=[torch.nn.init.normal_], )
@@ -180,6 +180,17 @@ def benchmark_median(niterations, outdir):
             # reduction_ratio=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
     )
     kn.func_benchmark(median_params, median_dims, kn.median_loop, "median",
+                      niterations, outdir)
+
+def benchmark_bmm(niterations, outdir):
+    device = torch.device(PYTORCH_DEVICE)
+    bmm_params = kn.BmmLoop(dim=[0],
+                            device=[device],
+                            dtype=[torch.float32],
+                            distribution=[torch.nn.init.normal_], )
+    bmm_dims = kn.BmmDimLoop(input_dim=[(10, 125, 25, 500), (10, 1_250, 50, 1_500), (15, 500, 57, 250)],
+    )
+    kn.func_benchmark(bmm_params, bmm_dims, kn.bmm_loop, "bmm",
                       niterations, outdir)
 
 
@@ -195,5 +206,6 @@ benchmark_map = {
     "IndexCopy": benchmark_index_copy,
     "IndexPut": benchmark_index_put,
     # Add additional function mappings here...
-    "Median" : benchmark_median
+    "Median" : benchmark_median,
+    "Bmm": benchmark_bmm,
 }
