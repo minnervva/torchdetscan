@@ -193,6 +193,17 @@ def benchmark_bmm(niterations, outdir):
     kn.func_benchmark(bmm_params, bmm_dims, kn.bmm_loop, "bmm",
                       niterations, outdir)
 
+def benchmark_histc(niterations, outdir):
+    device = torch.device(PYTORCH_DEVICE)
+    histc_params = kn.HistcLoop(dim=[0],
+                            device=[device],
+                            dtype=[torch.float32],
+                            distribution=[torch.nn.init.normal_], )
+    histc_dims = kn.HistcDimLoop(input_dim=[(100, 24, 0, 0), (100, 24, -5, 3), (100, 24, -3, 5), (250, 50, -3, 5)],
+    )
+    kn.func_benchmark(histc_params, histc_dims, kn.histc_loop, "histc",
+                      niterations, outdir)
+
 
 # Mapping function names to their benchmark functions
 benchmark_map = {
@@ -208,4 +219,5 @@ benchmark_map = {
     # Add additional function mappings here...
     "Median" : benchmark_median,
     "Bmm": benchmark_bmm,
+    "Histc": benchmark_histc,
 }
