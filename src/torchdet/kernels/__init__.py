@@ -14,6 +14,8 @@ from .bmm import BmmLoop, BmmDimLoop, bmm_loop
 from .histc import HistcLoop, HistcDimLoop, histc_loop
 from .tensor_put import TensorPutLoop, TensorPutDimLoop, tensor_put_loop
 from .bincount import BinCountLoop, BinCountDimLoop, bin_count_loop
+from .cumsum import CumSumLoop, CumSumDimLoop, cum_sum_loop
+
 __all__ = [
     "nn_benchmark",
     "func_benchmark",
@@ -45,4 +47,5 @@ __all__ = [
     "Histc",
     "TensorPut",
     "BinCount",
+    "CumSum",
 ]
