@@ -204,6 +204,22 @@ def benchmark_histc(niterations, outdir):
     kn.func_benchmark(histc_params, histc_dims, kn.histc_loop, "histc",
                       niterations, outdir)
 
+def benchmark_tensor_put(niterations, outdir):
+    device = torch.device(PYTORCH_DEVICE)
+    tensor_put_params = kn.TensorPutLoop(
+        accumulate=[True, False],
+        device=[device],
+        dtype=[torch.float32],
+        distribution=[torch.nn.init.normal_],
+    )
+    tensor_put_dims = kn.TensorPutDimLoop(
+        input_dim=[(100, 100), (250, 250) ,(1_000, 1_000)],
+        index_list_size=[10, 45, 34, 102, 150, 250, 750],
+    )
+
+    # each element of index_length should be lower than the total number of elements of a given tensor
+    kn.func_benchmark(tensor_put_params, tensor_put_dims, kn.tensor_put_loop, "put_", niterations, outdir)
+
 
 # Mapping function names to their benchmark functions
 benchmark_map = {
@@ -220,4 +236,5 @@ benchmark_map = {
     "Median" : benchmark_median,
     "Bmm": benchmark_bmm,
     "Histc": benchmark_histc,
+    "TensorPut": benchmark_tensor_put
 }

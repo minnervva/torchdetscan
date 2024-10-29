@@ -12,6 +12,7 @@ from .index_put import IndexPutLoop, IndexPutDimLoop, index_put_loop
 from .median import MedianLoop, MedianDimLoop, median_loop
 from .bmm import BmmLoop, BmmDimLoop, bmm_loop
 from .histc import HistcLoop, HistcDimLoop, histc_loop
+from .tensor_put import TensorPutLoop, TensorPutDimLoop, tensor_put_loop
 
 __all__ = [
     "nn_benchmark",
@@ -41,5 +42,6 @@ __all__ = [
     "MedianLoop",
     "median_put_loop"
     "BmmLoop",
-    "Histc"
+    "Histc",
+    "TensorPut",
 ]
