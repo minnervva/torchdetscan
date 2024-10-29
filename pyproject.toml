@@ -54,3 +54,9 @@ line-length = 100
 
 [tool.hatch.version]
 path = "src/torchdet/__version__.py"
+
+[tool.hatch.envs.test]
+dependencies = [
+  "pytest",
+  "pytest-cov"
+]
