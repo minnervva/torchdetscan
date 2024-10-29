@@ -13,7 +13,7 @@ from .median import MedianLoop, MedianDimLoop, median_loop
 from .bmm import BmmLoop, BmmDimLoop, bmm_loop
 from .histc import HistcLoop, HistcDimLoop, histc_loop
 from .tensor_put import TensorPutLoop, TensorPutDimLoop, tensor_put_loop
-
+from .bincount import BinCountLoop, BinCountDimLoop, bin_count_loop
 __all__ = [
     "nn_benchmark",
     "func_benchmark",
@@ -44,4 +44,5 @@ __all__ = [
     "BmmLoop",
     "Histc",
     "TensorPut",
+    "BinCount",
 ]

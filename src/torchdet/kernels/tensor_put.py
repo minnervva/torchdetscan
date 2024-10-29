@@ -8,7 +8,7 @@ class TensorPutHyperParams(HyperParams):
     accumulate: bool
 @dataclass
 class TensorPutLoop(HyperParamLoop):
-    accumulate: List[int]
+    accumulate: List[bool]
 @dataclass
 class TensorPutDim(Params):
     input_dim: Tuple

@@ -220,7 +220,21 @@ def benchmark_tensor_put(niterations, outdir):
     # each element of index_length should be lower than the total number of elements of a given tensor
     kn.func_benchmark(tensor_put_params, tensor_put_dims, kn.tensor_put_loop, "put_", niterations, outdir)
 
+def benchmark_bin_count(niterations, outdir):
+    device = torch.device(PYTORCH_DEVICE)
+    bin_count_params = kn.BinCountLoop(
+        dim=[0], # ignored parameter
+        device=[device],
+        dtype=[torch.int64],
+        distribution=[torch.nn.init.normal_],
+    )
+    bin_count_dims = kn.BinCountDimLoop(
+        input_range=[(5, 100), (1, 250) ,(23, 1_000)],
+        size=[10, 45, 34, 102, 150, 250, 750],
+    )
 
+    # each element of index_length should be lower than the total number of elements of a given tensor
+    kn.func_benchmark(bin_count_params, bin_count_dims, kn.bin_count_loop, "bincount", niterations, outdir)
 # Mapping function names to their benchmark functions
 benchmark_map = {
     "AvgPool3d": benchmark_avg_pool,
@@ -236,5 +250,6 @@ benchmark_map = {
     "Median" : benchmark_median,
     "Bmm": benchmark_bmm,
     "Histc": benchmark_histc,
-    "TensorPut": benchmark_tensor_put
+    "TensorPut": benchmark_tensor_put,
+    "BinCount": benchmark_bin_count
 }
