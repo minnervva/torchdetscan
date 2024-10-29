@@ -16,6 +16,7 @@ htmlcov/
 .pytest_cache
 build/
 dist/
+data/
 
 # Subversion
 .svn
