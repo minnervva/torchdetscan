@@ -5,7 +5,8 @@ build-backend = "hatchling.build"
 [project]
 name = "torchdet"
 dynamic = ["version"]
-description = "Find non-deterministic functions in your pytorch code"
+description = "Find non-deterministic functions in pytorch code"
+keywords = ["pytorch", "determinism", "non-determinism", "deterministic", "non-deterministic", "deterministic functions", "non-deterministic functions"]
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -16,10 +17,27 @@ dependencies = [
     "scipy"
 ]
 classifiers = [
+    "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+authors = [
+  {name = "Mark Coletti", email = "colettima@ornl.gov"},
+  {name = "Wael Elasif", email = "elwasifwr@ornl.gov"},
+  {name = "Gavin Wiggins", email = "wigginsg@ornl.gov"},
+  {name = "Ada Sedova", email = "sedovaaa@ornl.gov"},
+  {name = "Sanjif Shanmugavelu"},
+]
+license = {file = "LICENSE.txt"}
+maintainers = [
+  {name = "Mark Coletti", email = "colettima@ornl.gov"},
+  {name = "Sanjif Shanmugavelu"}
+]
+
+[project.urls]
+Repository = "https://github.com/minnervva/torchdetscan"
+Issues = "https://github.com/minnervva/torchdetscan/issues"
 
 [project.optional-dependencies]
 dev = ["ruff", "pytest"]
