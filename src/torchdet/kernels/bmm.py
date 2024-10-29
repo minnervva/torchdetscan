@@ -21,12 +21,12 @@ class BmmDimLoop(LoopParams):
 
 def bmm_loop(func_name, bmm_loop, data_loop):
     """ This is a generator function called by benchmark.func_benchmark
-    to generate random parameters for the dmm kernel.
+    to generate random parameters for the bmm kernel.
 
-    :param func_name: function name; unused since we know it's torch.dmm
-    :param dmm_loop: Contains the ranges for the hyperparameters of the dmm kernel.
+    :param func_name: function name; unused since we know it's torch.bmm
+    :param bmm_loop: Contains the ranges for the hyperparameters of the bmm kernel.
     :param data_loop:
-    :yields: A tuple containing the dmm kernel, the parameters for the kernel, the hyperparameters, and the dimension parameters.
+    :yields: A tuple containing the bmm kernel, the parameters for the kernel, the hyperparameters, and the dimension parameters.
     """
     for params in bmm_loop:
         bmm_params = BmmHyperParams(*params)

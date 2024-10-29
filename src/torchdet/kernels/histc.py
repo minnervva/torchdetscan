@@ -21,12 +21,12 @@ class HistcDimLoop(LoopParams):
 
 def histc_loop(func_name, histc_loop, data_loop):
     """ This is a generator function called by benchmark.func_benchmark
-    to generate random parameters for the dmm kernel.
+    to generate random parameters for the histc kernel.
 
-    :param func_name: function name; unused since we know it's torch.dmm
-    :param dmm_loop: Contains the ranges for the hyperparameters of the dmm kernel.
+    :param func_name: function name; unused since we know it's torch.histc
+    :param histc_loop: Contains the ranges for the hyperparameters of the histc kernel.
     :param data_loop:
-    :yields: A tuple containing the dmm kernel, the parameters for the kernel, the hyperparameters, and the dimension parameters.
+    :yields: A tuple containing the histc kernel, the parameters for the kernel, the hyperparameters, and the dimension parameters.
     """
     for params in histc_loop:
         histc_params = HistcHyperParams(*params)
