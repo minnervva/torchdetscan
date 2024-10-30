@@ -35,13 +35,13 @@ def cum_sum_loop(func_name:str, cum_sum_loop, data_loop):
         for d_params in data_loop:
             dim_params = CumSumDim(*d_params)
 
-            weights = (
+            data_ = (
                 cum_sum_params.distribution(torch.zeros(dim_params.size))
                 .to(cum_sum_params.dtype)
                 .to(cum_sum_params.device)
             )
 
             yield torch.cumsum, {
-                "input":weights,
-                "dim":0,
+                "input":data_,
+                "dim":cum_sum_params.dim,
             }, cum_sum_params, dim_params

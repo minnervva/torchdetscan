@@ -12,10 +12,14 @@ class HistcLoop(HyperParamLoop):
 @dataclass
 class HistcDim(Params):
     input_dim: Tuple
+    bins: int
+    minmax: Tuple
 
 @dataclass
 class HistcDimLoop(LoopParams):
     input_dim: List[Tuple]
+    bins: List[int]
+    minmax: List[Tuple]
     # reduction_ratio: List[float]
 
 
@@ -41,7 +45,7 @@ def histc_loop(func_name, histc_loop, data_loop):
 
             yield torch.histc, {
                 "input": input,
-                "bins": dim_params.input_dim[1],
-                "min": dim_params.input_dim[2],
-                "max": dim_params.input_dim[3],
+                "bins": dim_params.bins,
+                "min": dim_params.minmax[0],
+                "max": dim_params.minmax[1],
             }, histc_params, dim_params

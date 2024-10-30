@@ -199,7 +199,9 @@ def benchmark_histc(niterations, outdir):
                             device=[device],
                             dtype=[torch.float32],
                             distribution=[torch.nn.init.normal_], )
-    histc_dims = kn.HistcDimLoop(input_dim=[(100, 24, 0, 0), (100, 24, -5, 3), (100, 24, -3, 5), (250, 50, -3, 5)],
+    histc_dims = kn.HistcDimLoop(input_dim=[(100,), (500,), (2500,)],
+                                 bins=[25, 100, 250],
+                                 minmax=[(0., 0.), (-4., 3.), (-3., 4.)]
     )
     kn.func_benchmark(histc_params, histc_dims, kn.histc_loop, "histc",
                       niterations, outdir)
