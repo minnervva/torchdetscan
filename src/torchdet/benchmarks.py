@@ -172,7 +172,7 @@ def benchmark_index_put(niterations, outdir):
 def benchmark_median(niterations, outdir):
     device = torch.device(PYTORCH_DEVICE)
     median_params = kn.MedianLoop(#keepdim=[True, False],
-            dim=[0],
+                                  dim=[0],
                                   device=[device],
                                   dtype=[torch.float32],
                                   distribution=[torch.nn.init.normal_], )
@@ -182,7 +182,61 @@ def benchmark_median(niterations, outdir):
     kn.func_benchmark(median_params, median_dims, kn.median_loop, "median",
                       niterations, outdir)
 
+def benchmark_bmm(niterations, outdir):
+    device = torch.device(PYTORCH_DEVICE)
+    bmm_params = kn.BmmLoop(dim=[0],
+                            device=[device],
+                            dtype=[torch.float32],
+                            distribution=[torch.nn.init.normal_], )
+    bmm_dims = kn.BmmDimLoop(input_dim=[(10, 125, 25, 500), (10, 1_250, 50, 1_500), (15, 500, 57, 250)],
+    )
+    kn.func_benchmark(bmm_params, bmm_dims, kn.bmm_loop, "bmm",
+                      niterations, outdir)
 
+def benchmark_histc(niterations, outdir):
+    device = torch.device(PYTORCH_DEVICE)
+    histc_params = kn.HistcLoop(dim=[0],
+                            device=[device],
+                            dtype=[torch.float32],
+                            distribution=[torch.nn.init.normal_], )
+    histc_dims = kn.HistcDimLoop(input_dim=[(100,), (500,), (2500,)],
+                                 bins=[25, 100, 250],
+                                 minmax=[(0., 0.), (-4., 3.), (-3., 4.)]
+    )
+    kn.func_benchmark(histc_params, histc_dims, kn.histc_loop, "histc",
+                      niterations, outdir)
+
+def benchmark_tensor_put(niterations, outdir):
+    device = torch.device(PYTORCH_DEVICE)
+    tensor_put_params = kn.TensorPutLoop(
+        accumulate=[True, False],
+        device=[device],
+        dtype=[torch.float32],
+        distribution=[torch.nn.init.normal_],
+    )
+    tensor_put_dims = kn.TensorPutDimLoop(
+        input_dim=[(100, 100), (250, 250) ,(1_000, 1_000)],
+        index_list_size=[10, 45, 34, 102, 150, 250, 750],
+    )
+
+    # each element of index_length should be lower than the total number of elements of a given tensor
+    kn.func_benchmark(tensor_put_params, tensor_put_dims, kn.tensor_put_loop, "put_", niterations, outdir)
+
+def benchmark_bin_count(niterations, outdir):
+    device = torch.device(PYTORCH_DEVICE)
+    bin_count_params = kn.BinCountLoop(
+        dim=[0], # ignored parameter
+        device=[device],
+        dtype=[torch.int64],
+        distribution=[torch.nn.init.normal_],
+    )
+    bin_count_dims = kn.BinCountDimLoop(
+        input_range=[(5, 100), (1, 250) ,(23, 1_000)],
+        size=[10, 45, 34, 102, 150, 250, 750],
+    )
+
+    # each element of index_length should be lower than the total number of elements of a given tensor
+    kn.func_benchmark(bin_count_params, bin_count_dims, kn.bin_count_loop, "bincount", niterations, outdir)
 # Mapping function names to their benchmark functions
 benchmark_map = {
     "AvgPool3d": benchmark_avg_pool,
@@ -195,5 +249,9 @@ benchmark_map = {
     "IndexCopy": benchmark_index_copy,
     "IndexPut": benchmark_index_put,
     # Add additional function mappings here...
-    "Median" : benchmark_median
+    "Median" : benchmark_median,
+    "Bmm": benchmark_bmm,
+    "Histc": benchmark_histc,
+    "TensorPut": benchmark_tensor_put,
+    "BinCount": benchmark_bin_count
 }
