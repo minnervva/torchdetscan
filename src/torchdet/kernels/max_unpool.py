@@ -36,7 +36,7 @@ class MaxUnpoolDimLoop(LoopParams):
     dim: List[Tuple]
 
 
-def max_pool_loop(nnmodule, max_pool_loop, data_loop):
+def max_unpool_loop(nnmodule, max_pool_loop, data_loop):
     for params in max_pool_loop:
         max_unpool_params = MaxUnpoolHyperParams(*params)
         make_unpool_model = max_unpool_params.asdict()

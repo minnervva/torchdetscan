@@ -30,6 +30,38 @@ def benchmark_avg_pool(niterations):
     )
 
 
+def benchmark_maxpool3d(niterations):
+    device = torch.device(PYTORCH_DEVICE)
+    max_pool_params = kn.MaxPoolLoop(
+        kernel_size=[
+            (3, 3, 3),
+            (
+                5,
+                5,
+                5,
+            ),
+        ],
+        stride=[1, 3],
+        padding=[0, 1],
+        dilation=[1, 2],
+        ceil_mode=[True, False],
+        device=[device],
+        dtype=[torch.float32],
+        distribution=[torch.nn.init.normal_],
+    )
+    max_pool_dims = kn.MaxPoolDimLoop(
+        batch_size=[1, 3], dim=[(3, 16, 16, 16), (3, 32, 32, 32)]
+    )
+    kn.nn_benchmark(
+        max_pool_params,
+        max_pool_dims,
+        kn.max_pool_loop,
+        torch.nn.MaxPool3d,
+        niterations,
+        backward=True,
+    )
+
+
 def benchmark_maxunpool1d(niterations):
     device = torch.device(PYTORCH_DEVICE)
     max_unpool_params = kn.MaxUnpoolLoop(
@@ -44,7 +76,7 @@ def benchmark_maxunpool1d(niterations):
     kn.func_benchmark(
         max_unpool_params,
         max_unpool_dims,
-        kn.max_pool_loop,
+        kn.max_unpool_loop,
         torch.nn.MaxUnpool1d,
         niterations,
     )
@@ -75,7 +107,7 @@ def benchmark_maxunpool2d(niterations):
     kn.func_benchmark(
         max_unpool_params,
         max_unpool_dims,
-        kn.max_pool_loop,
+        kn.max_unpool_loop,
         torch.nn.MaxUnpool2d,
         niterations,
     )
@@ -108,7 +140,7 @@ def benchmark_maxunpool3d(niterations):
     kn.func_benchmark(
         max_unpool_params,
         max_unpool_dims,
-        kn.max_pool_loop,
+        kn.max_unpool_loop,
         torch.nn.MaxUnpool3d,
         niterations,
     )
@@ -345,6 +377,7 @@ benchmark_map = {
     "IndexAdd": benchmark_index_add,
     "IndexCopy": benchmark_index_copy,
     "IndexPut": benchmark_index_put,
+    "MaxPool3d": benchmark_maxpool3d,
     "MaxUnpool1d": benchmark_maxunpool1d,
     "MaxUnpool2d": benchmark_maxunpool2d,
     "MaxUnpool3d": benchmark_maxunpool3d,
