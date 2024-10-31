@@ -11,6 +11,7 @@ from .index_copy import index_copy_loop
 from .index_put import IndexPutLoop, IndexPutDimLoop, index_put_loop
 from .nll_loss import NLLLossLoop, NLLLossDimLoop, nll_loss_loop
 from .ctc_loss import CTCLossLoop, CTCLossDimLoop, ctc_loss_loop
+from .max_unpool import MaxUnpoolLoop, MaxUnpoolDimLoop, max_pool_loop
 
 __all__ = [
     "nn_benchmark",
@@ -18,6 +19,9 @@ __all__ = [
     "AvgPoolLoop",
     "BatchDimLoop",
     "avg_pool_loop",
+    "MaxUnpoolLoop",
+    "MaxUnpoolDimLoop",
+    "max_pool_loop",
     "ConvLoop",
     "convolution_loop",
     "ScatterLoop",

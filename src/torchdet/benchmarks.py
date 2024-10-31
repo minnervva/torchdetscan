@@ -30,6 +30,90 @@ def benchmark_avg_pool(niterations):
     )
 
 
+def benchmark_maxunpool1d(niterations):
+    device = torch.device(PYTORCH_DEVICE)
+    max_unpool_params = kn.MaxUnpoolLoop(
+        kernel_size=[(3,), (5,)],
+        stride=[1, 3],
+        padding=[0, 1],
+        device=[device],
+        dtype=[torch.float32],
+        distribution=[torch.nn.init.normal_],
+    )
+    max_unpool_dims = kn.MaxUnpoolDimLoop(batch_size=[1, 3], dim=[(3, 16), (3, 32)])
+    kn.func_benchmark(
+        max_unpool_params,
+        max_unpool_dims,
+        kn.max_pool_loop,
+        torch.nn.MaxUnpool1d,
+        niterations,
+    )
+
+
+def benchmark_maxunpool2d(niterations):
+    device = torch.device(PYTORCH_DEVICE)
+    max_unpool_params = kn.MaxUnpoolLoop(
+        kernel_size=[
+            (
+                3,
+                3,
+            ),
+            (
+                5,
+                5,
+            ),
+        ],
+        stride=[1, 3],
+        padding=[0, 1],
+        device=[device],
+        dtype=[torch.float32],
+        distribution=[torch.nn.init.normal_],
+    )
+    max_unpool_dims = kn.MaxUnpoolDimLoop(
+        batch_size=[1, 3], dim=[(3, 16, 16), (3, 32, 32)]
+    )
+    kn.func_benchmark(
+        max_unpool_params,
+        max_unpool_dims,
+        kn.max_pool_loop,
+        torch.nn.MaxUnpool2d,
+        niterations,
+    )
+
+
+def benchmark_maxunpool3d(niterations):
+    device = torch.device(PYTORCH_DEVICE)
+    max_unpool_params = kn.MaxUnpoolLoop(
+        kernel_size=[
+            (
+                3,
+                3,
+                3,
+            ),
+            (
+                5,
+                5,
+                5,
+            ),
+        ],
+        stride=[1, 3],
+        padding=[0, 1],
+        device=[device],
+        dtype=[torch.float32],
+        distribution=[torch.nn.init.normal_],
+    )
+    max_unpool_dims = kn.MaxUnpoolDimLoop(
+        batch_size=[1, 3], dim=[(3, 16, 16, 16), (3, 32, 32, 32)]
+    )
+    kn.func_benchmark(
+        max_unpool_params,
+        max_unpool_dims,
+        kn.max_pool_loop,
+        torch.nn.MaxUnpool3d,
+        niterations,
+    )
+
+
 def benchmark_conv1d(niterations):
     device = torch.device(PYTORCH_DEVICE)
     conv_params = kn.ConvLoop(
@@ -261,6 +345,9 @@ benchmark_map = {
     "IndexAdd": benchmark_index_add,
     "IndexCopy": benchmark_index_copy,
     "IndexPut": benchmark_index_put,
+    "MaxUnpool1d": benchmark_maxunpool1d,
+    "MaxUnpool2d": benchmark_maxunpool2d,
+    "MaxUnpool3d": benchmark_maxunpool3d,
     "NLLLoss": benchmark_nll_loss,
     "CTCLoss": benchmark_ctc_loss,
     # Add additional function mappings here...
