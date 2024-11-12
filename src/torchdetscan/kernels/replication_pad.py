@@ -2,7 +2,7 @@ import torch
 from dataclasses import dataclass, asdict
 from typing import List, Tuple
 
-from torchdet.kernels.utils import (
+from torchdetscan.kernels.utils import (
     HyperParamLoop,
     HyperParams,
     LoopParams,

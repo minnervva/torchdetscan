@@ -1,4 +1,4 @@
-"""Main driver for torchdet command line interface."""
+"""Main driver for torchdetscan command line interface."""
 
 import argparse
 import pandas as pd
@@ -13,7 +13,7 @@ from .linter import lint_file
 def run_scan(args: argparse.Namespace):
     """Run the scan functionality to lint a file.
 
-    This is invoked from the CLI using `torchdet scan`.
+    This is invoked from the CLI using `torchdetscan scan`.
 
     Parameters
     ----------
@@ -40,7 +40,7 @@ def run_scan(args: argparse.Namespace):
 def run_test(args: argparse.Namespace):
     """Run the test functionality.
 
-    This is invoked from the CLI using `torchdet test`.
+    This is invoked from the CLI using `torchdetscan test`.
 
     Parameters
     ----------
@@ -54,6 +54,11 @@ def run_test(args: argparse.Namespace):
         print("Valid function names are:")
         for key in benchmark_map:
             print(f"- {key}")
+        return
+
+    if args.function == []:
+        print("No function name provided. Please provide a function name, path "
+              "to a csv file, or --valid to list supported functions.")
         return
 
     if function[0].endswith(".csv") and args.select:
@@ -86,11 +91,11 @@ def run_test(args: argparse.Namespace):
             benchmark_map[func](iterations)
         else:
             print(f"Warning: function '{func}' is not recognized.")
-            print(f"Run 'torchdet test {func} --valid' for valid function names.")
+            print(f"Run 'torchdetscan test {func} --valid' for valid function names.")
 
 
 def main():
-    """Command line interface (CLI) for torchdet."""
+    """Command line interface (CLI) for torchdetscan."""
     parser = argparse.ArgumentParser(
         description="Find non-deterministic functions in your PyTorch code."
     )
@@ -99,7 +104,7 @@ def main():
 
     subparsers = parser.add_subparsers(required=True, title="subcommands", help="valid subcommands")
 
-    # Create parser and arguments for the `torchdet scan` subcommand
+    # Create parser and arguments for the `torchdetscan scan` subcommand
     parser_scan = subparsers.add_parser("scan", help="run the linter tool")
     parser_scan.set_defaults(func=run_scan)
 
@@ -117,12 +122,12 @@ def main():
         "path", type=Path, help="path to file or directory in which to recursively lint"
     )
 
-    # Create parser and arguments for the `torchdet test` subcommand
+    # Create parser and arguments for the `torchdetscan test` subcommand
     parser_test = subparsers.add_parser("test", help="run the testing tool")
     parser_test.set_defaults(func=run_test)
 
     parser_test.add_argument(
-        "function", type=str, nargs="+", help="function name(s) or path to csv file"
+        "function", type=str, nargs="*", help="function name(s) or path to csv file"
     )
 
     parser_test.add_argument(

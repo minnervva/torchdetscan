@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "torchdet"
+name = "torchdetscan"
 dynamic = ["version"]
 description = "Find non-deterministic functions in pytorch code"
 keywords = ["pytorch", "determinism", "non-determinism", "deterministic", "non-deterministic", "deterministic functions", "non-deterministic functions"]
@@ -43,7 +43,7 @@ Issues = "https://github.com/minnervva/torchdetscan/issues"
 dev = ["ruff", "pytest"]
 
 [project.scripts]
-torchdet = "torchdet.main:main"
+torchdetscan = "torchdetscan.main:main"
 
 [tool.pyright]
 reportUnusedImport = true
@@ -53,7 +53,7 @@ reportUnusedVariable = true
 line-length = 100
 
 [tool.hatch.version]
-path = "src/torchdet/__version__.py"
+path = "src/torchdetscan/__version__.py"
 
 [tool.hatch.envs.test]
 dependencies = [
