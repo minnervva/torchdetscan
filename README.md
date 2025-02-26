@@ -1,4 +1,4 @@
-# TorchDetScan
+# TorchDet
 
 A static linter and runtime testing platform for assessing deep learning non-determinism, randomness and reproducibility with applications to scientific computing and simulation within the PyTorch framework.
 
